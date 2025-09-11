@@ -78,4 +78,4 @@ Secrets
 License
 MIT
 
-Test note: Triggering Smart Doc via a minimal change (v4).
+Test note: Triggering Smart Doc via a minimal change (v5).
