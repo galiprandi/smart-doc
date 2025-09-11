@@ -1,0 +1,41 @@
+name: Test Smart Doc
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  smart-doc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Smart Doc (dry run)
+        uses: ./
+        with:
+          smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
+          branch: main
+          docs_folder: docs
+          generate_history: 'true'
+          # jira_host: ${{ secrets.JIRA_HOST }}
+          # jira_email: ${{ secrets.JIRA_EMAIL }}
+          # jira_api_token: ${{ secrets.JIRA_API_TOKEN }}
+          # clickup_token: ${{ secrets.CLICKUP_TOKEN }}
+
+      - name: Upload docs preview (PR only)
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: smart-doc-output
+          path: |
+            docs/**
+            HISTORY.md
+          if-no-files-found: ignore
