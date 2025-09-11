@@ -67,6 +67,8 @@ runs:
         INPUT_JIRA_EMAIL: ${{ inputs.jira_email }}
         INPUT_JIRA_API_TOKEN: ${{ inputs.jira_api_token }}
         INPUT_CLICKUP_TOKEN: ${{ inputs.clickup_token }}
+        GH_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ github.token }}
       run: bash "${GITHUB_ACTION_PATH}/entrypoint.sh"
 
 permissions:

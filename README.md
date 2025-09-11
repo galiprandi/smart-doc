@@ -54,10 +54,10 @@ Inputs
 - Optional MCP: `jira_host`, `jira_email`, `jira_api_token`, `clickup_token`.
 
 How it works
-- Computes changed files using `git diff origin/<branch>...HEAD` (or PR base).
+- Computes changed files using GitHub API via `gh api repos/<owner>/<repo>/compare/<base>...<head>`.
 - Builds the prompt (custom or default) and appends changed files context.
 - Runs `qwen exec` (FS tool first, then fallback variants).
-- Commits and pushes only on `push` events (no push on PRs).
+- Posts a PR comment summary (on PRs). On `push` events, stages/commits/pushes doc changes.
 
 Notes on MCP
 - MCP (Model Context Protocol) refers to external context providers the agent can query (e.g., Jira/ClickUp). This action only creates `~/.qwen/settings.json` if the related secrets are provided; otherwise it skips MCP entirely.

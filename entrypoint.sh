@@ -92,22 +92,25 @@ else
   if [[ -f "$SETTINGS_PATH" ]]; then rm -f "$SETTINGS_PATH"; fi
 fi
 
-# Determine changed files range
-git fetch --all --quiet || true
+# Determine changed files range using GitHub API via gh
 EVENT_NAME=${GITHUB_EVENT_NAME:-push}
-if [[ "$EVENT_NAME" == "pull_request" && -n "${GITHUB_BASE_REF:-}" ]]; then
-  BASE_REF="origin/${GITHUB_BASE_REF}"
-  if git rev-parse --verify "$BASE_REF" >/dev/null 2>&1; then
-    CHANGED_FILES=$(git diff --name-only "$BASE_REF"...HEAD)
-  else
-    CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || true)
-  fi
+REPO=${GITHUB_REPOSITORY}
+if [[ "$EVENT_NAME" == "pull_request" ]]; then
+  BASE=${GITHUB_BASE_REF}
+  HEAD=${GITHUB_SHA}
+  CHANGED_FILES=$(gh api \
+    repos/${REPO}/compare/${BASE}...${HEAD} \
+    --jq '.files[].filename' 2>/dev/null || true)
 else
-  # push event: compare current commit vs previous commit
-  if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
-    CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+  BASE=$(jq -r '.before // empty' "$GITHUB_EVENT_PATH" || true)
+  HEAD=${GITHUB_SHA}
+  if [[ -n "$BASE" ]]; then
+    CHANGED_FILES=$(gh api \
+      repos/${REPO}/compare/${BASE}...${HEAD} \
+      --jq '.files[].filename' 2>/dev/null || true)
   else
-    CHANGED_FILES=$(git ls-files)
+    # First commit on branch: include all tracked files
+    CHANGED_FILES=$(git ls-files || true)
   fi
 fi
 
@@ -160,6 +163,14 @@ fi
 # Stage, commit, push only on push events
 if [[ "$EVENT_NAME" == "pull_request" ]]; then
   warn "Pull request event detected: will not push changes. Review artifacts in the PR run."
+  # Optional: comment summary on PR
+  if command -v jq >/dev/null 2>&1; then
+    PR_NUMBER=$(jq -r '.pull_request.number // empty' "$GITHUB_EVENT_PATH" || true)
+    if [[ -n "$PR_NUMBER" ]]; then
+      SUMMARY_BODY=$(printf "Smart Doc analyzed these files:\n\n%s\n\nNote: No commits were pushed on PR runs. Preview is attached as artifact (if any)." "$CHANGED_FILES")
+      gh pr comment "$PR_NUMBER" --body "$SUMMARY_BODY" >/dev/null 2>&1 || true
+    fi
+  fi
   exit 0
 fi
 
