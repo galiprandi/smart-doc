@@ -33,18 +33,12 @@ git config --global user.email "action@github.com"
 # Ensure docs folder exists
 mkdir -p "$INPUT_DOCS_FOLDER"
 
-# Install Qwen Code if missing (double-check in case step skipped)
-if ! command -v qwen >/dev/null 2>&1; then
-  log "Installing Qwen Code CLI..."
-  npm install -g @qwen-code/qwen-code
-fi
-
 # Authentication
 if [[ -z "${OPENAI_API_KEY:-}" ]]; then
-  err "SMART_DOC_API_TOKEN is required and must contain your OpenAI API key."
+  err "SMART_DOC_API_TOKEN is required (mapped to OPENAI_API_KEY)."
   exit 1
 fi
-log "Auth configured: OPENAI_API_KEY is set for Qwen-Code."
+log "Auth configured: OPENAI_API_KEY is set."
 
 # Select model: use user-provided if any; otherwise use temporary default
 MODEL="$INPUT_MODEL"
@@ -149,24 +143,48 @@ fi
   echo "Generate HISTORY.md: $INPUT_GENERATE_HISTORY"
 } >> "$PROMPT_FILE"
 
-# Try running Qwen-Code with FS tool first, then fallback gradually
-run_with_variants() {
+openai_generate() {
   local prompt_file="$1"
-  set +e
+  local model_flag
   if [[ -n "$MODEL" ]]; then
-    qwen --model "$MODEL" --prompt "$(cat "$prompt_file")" && return 0
-    qwen --model "$MODEL" < "$prompt_file" && return 0
+    model_flag="$MODEL"
   else
-    qwen --prompt "$(cat "$prompt_file")" && return 0
-    qwen < "$prompt_file" && return 0
+    model_flag="openai:gpt-5-nano"
   fi
-  set -e
-  return 1
+  log "Calling OpenAI Responses API with model: $model_flag"
+  local response_file
+  response_file=$(mktemp)
+  curl -sS https://api.openai.com/v1/responses \
+    -H "Authorization: Bearer ${OPENAI_API_KEY}" \
+    -H "Content-Type: application/json" \
+    -d @<(jq -n --arg m "$model_flag" --arg p "$(sed 's/\\/\\\\/g' "$prompt_file" | sed 's/"/\\"/g')" '{model:$m, input:$p}') \
+    > "$response_file"
+  local output
+  output=$(jq -r '(.output_text // .choices[0].message.content // .data[0].text // empty)' "$response_file") || true
+  if [[ -z "$output" || "$output" == "null" ]]; then
+    warn "OpenAI response contained no output. Showing first 200 lines:"
+    sed -n '1,200p' "$response_file" || true
+    return 1
+  fi
+  mkdir -p "$INPUT_DOCS_FOLDER"
+  printf "%s\n" "$output" > "$INPUT_DOCS_FOLDER/README.md"
+  log "Wrote generated content to $INPUT_DOCS_FOLDER/README.md"
 }
 
-log "Running Smart Doc with Qwen-Code..."
-if ! run_with_variants "$PROMPT_FILE"; then
-  warn "Qwen-Code execution failed with attempted variants. Documentation may not have been updated."
+log "Running Smart Doc with OpenAI (Responses API)..."
+if ! openai_generate "$PROMPT_FILE"; then
+  warn "OpenAI generation failed; seeding minimal docs if not present."
+  if [[ ! -f "$INPUT_DOCS_FOLDER/README.md" ]]; then
+    cat > "$INPUT_DOCS_FOLDER/README.md" << 'EOSEED'
+# Project Documentation
+
+This is an auto-generated documentation seed. Content generation failed or produced no output.
+
+- Architecture: see ./architecture/overview.md
+- Stack: see ./stack.md
+- Modules: see ./modules/
+EOSEED
+  fi
 fi
 
 # Optionally generate/update HISTORY.md marker if requested and file missing
