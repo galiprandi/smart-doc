@@ -133,10 +133,10 @@ fi
 run_with_variants() {
   local prompt_file="$1"
   set +e
-  qwen exec --model qwen-code --tools fs --prompt "$(cat "$prompt_file")" && return 0
-  qwen exec --model qwen-code --tools fs --prompt-file "$prompt_file" && return 0
-  qwen exec --model qwen-code --prompt-file "$prompt_file" && return 0
-  qwen exec --model qwen-code --prompt "$(cat "$prompt_file")" && return 0
+  qwen --model qwen-code --tools fs --prompt "$(cat "$prompt_file")" && return 0
+  qwen --model qwen-code --tools fs --prompt-file "$prompt_file" && return 0
+  qwen --model qwen-code --prompt-file "$prompt_file" && return 0
+  qwen --model qwen-code --prompt "$(cat "$prompt_file")" && return 0
   set -e
   return 1
 }
