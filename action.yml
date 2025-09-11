@@ -22,7 +22,7 @@ inputs:
     required: false
     default: 'true'
   smart_doc_api_token:
-    description: 'Your Qwen-Code API token (from ModelScope). Required for authentication.'
+    description: 'Your OpenAI API key (alias). Will be used as OPENAI_API_KEY by Qwen-Code.'
     required: true
   jira_host:
     description: 'Your Jira Cloud host (e.g., https://your-company.atlassian.net)'
@@ -41,7 +41,7 @@ inputs:
     required: false
     default: ''
   openai_api_key:
-    description: 'Optional: OpenAI API key for Qwen-Code (preferred auth)'
+    description: 'Optional: OpenAI API key (overrides smart_doc_api_token if both provided)'
     required: false
     default: ''
 

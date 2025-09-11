@@ -17,9 +17,12 @@ INPUT_JIRA_EMAIL=${INPUT_JIRA_EMAIL:-}
 INPUT_JIRA_API_TOKEN=${INPUT_JIRA_API_TOKEN:-}
 INPUT_CLICKUP_TOKEN=${INPUT_CLICKUP_TOKEN:-}
 
-# Prefer OpenAI API key if provided; otherwise try legacy token if needed
+## Auth mapping: prefer explicit openai_api_key, else use smart_doc_api_token
 if [[ -n "$INPUT_OPENAI_API_KEY" ]]; then
   export OPENAI_API_KEY="$INPUT_OPENAI_API_KEY"
+fi
+if [[ -z "${OPENAI_API_KEY:-}" && -n "$INPUT_SMART_DOC_API_TOKEN" ]]; then
+  export OPENAI_API_KEY="$INPUT_SMART_DOC_API_TOKEN"
 fi
 
 # Configure git identity for commits (push events only)
@@ -37,11 +40,9 @@ fi
 
 # Authentication
 if [[ -n "${OPENAI_API_KEY:-}" ]]; then
-  log "Using OpenAI API key for Qwen-Code."
-elif [[ -n "$INPUT_SMART_DOC_API_TOKEN" ]]; then
-  warn "SMART_DOC_API_TOKEN provided, but current Qwen CLI expects provider API keys (e.g., OPENAI_API_KEY). Proceeding without provider key."
+  log "Auth configured: OPENAI_API_KEY is set for Qwen-Code."
 else
-  warn "No provider API key configured (e.g., OPENAI_API_KEY). Qwen-Code may fail to run."
+  warn "No OPENAI_API_KEY configured; Qwen-Code may fail to run."
 fi
 
 # Prepare optional MCP settings if any secret present
