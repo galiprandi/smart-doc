@@ -45,7 +45,7 @@ MODEL="$INPUT_MODEL"
 if [[ -n "$MODEL" ]]; then
   log "Using model: $MODEL"
 else
-  MODEL="openai:gpt-5-nano"
+  MODEL="gpt-5-nano"
   log "No model specified; using temporary default model: $MODEL"
 fi
 
@@ -149,7 +149,11 @@ openai_generate() {
   if [[ -n "$MODEL" ]]; then
     model_flag="$MODEL"
   else
-    model_flag="openai:gpt-5-nano"
+    model_flag="gpt-5-nano"
+  fi
+  # Strip optional provider prefix like 'openai:' if present
+  if [[ "$model_flag" == openai:* ]]; then
+    model_flag="${model_flag#openai:}"
   fi
   log "Calling OpenAI Responses API with model: $model_flag"
   local response_file

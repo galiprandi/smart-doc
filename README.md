@@ -50,7 +50,7 @@ Inputs
 - `docs_folder` (default: `docs`): documentation directory; created if missing.
 - `prompt_template` (optional): path to custom prompt in repo.
 - `generate_history` (default: `true`): ensure `HISTORY.md` exists in root.
-- `model` (optional): override model (e.g., `openai:gpt-5-nano`). Por defecto: `openai:gpt-5-nano` (puedes cambiarlo o dejar vacío si prefieres que Qwen elija).
+- `model` (optional): override model (e.g., `gpt-5-nano`). Default: `gpt-5-nano`.
 - Optional MCP: `jira_host`, `jira_email`, `jira_api_token`, `clickup_token`.
 
 How it works
