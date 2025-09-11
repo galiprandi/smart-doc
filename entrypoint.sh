@@ -89,18 +89,20 @@ fi
 # Determine changed files range
 git fetch --all --quiet || true
 EVENT_NAME=${GITHUB_EVENT_NAME:-push}
-BASE_REF=""
 if [[ "$EVENT_NAME" == "pull_request" && -n "${GITHUB_BASE_REF:-}" ]]; then
   BASE_REF="origin/${GITHUB_BASE_REF}"
+  if git rev-parse --verify "$BASE_REF" >/dev/null 2>&1; then
+    CHANGED_FILES=$(git diff --name-only "$BASE_REF"...HEAD)
+  else
+    CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || true)
+  fi
 else
-  BASE_REF="origin/${INPUT_BRANCH}"
-fi
-
-if git rev-parse --verify "$BASE_REF" >/dev/null 2>&1; then
-  CHANGED_FILES=$(git diff --name-only "$BASE_REF"...HEAD)
-else
-  # Fallback to last commit if base is unknown
-  CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || true)
+  # push event: compare current commit vs previous commit
+  if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+    CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+  else
+    CHANGED_FILES=$(git ls-files)
+  fi
 fi
 
 if [[ -z "${CHANGED_FILES//[[:space:]]/}" ]]; then
@@ -167,4 +169,3 @@ git commit -m "docs: update documentation via Smart Doc"
 git push || warn "Git push failed (possibly due to permissions)."
 
 log "Smart Doc completed successfully."
-
