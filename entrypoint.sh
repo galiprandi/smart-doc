@@ -36,7 +36,7 @@ if ! command -v qwen >/dev/null 2>&1; then
 fi
 
 # Authentication
-if [[ -n "$OPENAI_API_KEY" ]]; then
+if [[ -n "${OPENAI_API_KEY:-}" ]]; then
   log "Using OpenAI API key for Qwen-Code."
 elif [[ -n "$INPUT_SMART_DOC_API_TOKEN" ]]; then
   warn "SMART_DOC_API_TOKEN provided, but current Qwen CLI expects provider API keys (e.g., OPENAI_API_KEY). Proceeding without provider key."
