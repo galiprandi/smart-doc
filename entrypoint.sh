@@ -11,14 +11,15 @@ INPUT_DOCS_FOLDER=${INPUT_DOCS_FOLDER:-docs}
 INPUT_PROMPT_TEMPLATE=${INPUT_PROMPT_TEMPLATE:-}
 INPUT_GENERATE_HISTORY=${INPUT_GENERATE_HISTORY:-true}
 INPUT_SMART_DOC_API_TOKEN=${INPUT_SMART_DOC_API_TOKEN:-}
+INPUT_OPENAI_API_KEY=${INPUT_OPENAI_API_KEY:-}
 INPUT_JIRA_HOST=${INPUT_JIRA_HOST:-}
 INPUT_JIRA_EMAIL=${INPUT_JIRA_EMAIL:-}
 INPUT_JIRA_API_TOKEN=${INPUT_JIRA_API_TOKEN:-}
 INPUT_CLICKUP_TOKEN=${INPUT_CLICKUP_TOKEN:-}
 
-if [[ -z "$INPUT_SMART_DOC_API_TOKEN" ]]; then
-  err "Input 'smart_doc_api_token' is required"
-  exit 1
+# Prefer OpenAI API key if provided; otherwise try legacy token if needed
+if [[ -n "$INPUT_OPENAI_API_KEY" ]]; then
+  export OPENAI_API_KEY="$INPUT_OPENAI_API_KEY"
 fi
 
 # Configure git identity for commits (push events only)
@@ -34,9 +35,14 @@ if ! command -v qwen >/dev/null 2>&1; then
   npm install -g @qwen-code/qwen-code
 fi
 
-# Authenticate Qwen Code
-log "Authenticating with Qwen-Code..."
-qwen login --token "$INPUT_SMART_DOC_API_TOKEN" >/dev/null 2>&1 || true
+# Authentication
+if [[ -n "$OPENAI_API_KEY" ]]; then
+  log "Using OpenAI API key for Qwen-Code."
+elif [[ -n "$INPUT_SMART_DOC_API_TOKEN" ]]; then
+  warn "SMART_DOC_API_TOKEN provided, but current Qwen CLI expects provider API keys (e.g., OPENAI_API_KEY). Proceeding without provider key."
+else
+  warn "No provider API key configured (e.g., OPENAI_API_KEY). Qwen-Code may fail to run."
+fi
 
 # Prepare optional MCP settings if any secret present
 mkdir -p "$HOME/.qwen"

@@ -8,9 +8,10 @@ Key points
 - MCP (Jira/ClickUp) optional via `~/.qwen/settings.json` when secrets are provided.
 
 Usage
-1) Add secret `SMART_DOC_API_TOKEN` (ModelScope token for Qwen-Code).
-   - In GitHub: go to `Settings` → `Secrets and variables` → `Actions` → `New repository secret`.
-   - Name: `SMART_DOC_API_TOKEN`; Value: your ModelScope API token.
+1) Add auth secret for Qwen-Code.
+   - Preferred: `OPENAI_API_KEY` (recommended; Qwen CLI accepts provider keys).
+   - Optional/legacy: `SMART_DOC_API_TOKEN` (kept for backward compatibility; Qwen may ignore it).
+   - Add under: `Settings` → `Secrets and variables` → `Actions` → `New repository secret`.
 2) Create workflow `.github/workflows/docs.yml`:
 
 ```yaml
@@ -44,7 +45,8 @@ jobs:
 ```
 
 Inputs
-- `smart_doc_api_token` (required): Qwen-Code API token.
+- `openai_api_key` (optional, recommended): OpenAI API key used by Qwen-Code.
+- `smart_doc_api_token` (optional, legacy): kept for compatibility; current Qwen prefers provider keys.
 - `branch` (default: `main`): reference branch for diffs.
 - `docs_folder` (default: `docs`): documentation directory; created if missing.
 - `prompt_template` (optional): path to custom prompt in repo.
@@ -61,8 +63,10 @@ Notes on MCP
 - MCP (Model Context Protocol) refers to external context providers the agent can query (e.g., Jira/ClickUp). This action only creates `~/.qwen/settings.json` if the related secrets are provided; otherwise it skips MCP entirely.
 
 Secrets
-- Required:
-  - `SMART_DOC_API_TOKEN`: Qwen-Code token from ModelScope (Profile → API Tokens). Add it under `Settings` → `Secrets and variables` → `Actions`.
+- Preferred:
+  - `OPENAI_API_KEY`: Used by Qwen-Code for model access.
+- Optional:
+  - `SMART_DOC_API_TOKEN`: Legacy token; may not be used by current CLI.
 - Optional (only if you want ticket enrichment):
   - `JIRA_HOST` (e.g., `https://your-company.atlassian.net`)
   - `JIRA_EMAIL`
