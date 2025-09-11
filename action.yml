@@ -1,0 +1,70 @@
+name: 'Smart Doc'
+description: 'Automatically updates documentation using AI and enriches it with context.'
+branding:
+  icon: 'book-open'
+  color: 'purple'
+
+inputs:
+  branch:
+    description: 'Target branch to analyze changes (default: main)'
+    required: false
+    default: 'main'
+  docs_folder:
+    description: 'Folder where documentation is stored (default: docs)'
+    required: false
+    default: 'docs'
+  prompt_template:
+    description: 'Path to custom prompt template in your repo (optional)'
+    required: false
+    default: ''
+  generate_history:
+    description: 'Generate HISTORY.md with ticket context (default: true)'
+    required: false
+    default: 'true'
+  smart_doc_api_token:
+    description: 'Your Qwen-Code API token (from ModelScope). Required for authentication.'
+    required: true
+  jira_host:
+    description: 'Your Jira Cloud host (e.g., https://your-company.atlassian.net)'
+    required: false
+    default: ''
+  jira_email:
+    description: 'Your Jira account email (for MCP auth)'
+    required: false
+    default: ''
+  jira_api_token:
+    description: 'Your Jira API token'
+    required: false
+    default: ''
+  clickup_token:
+    description: 'Your Clickup Personal Access Token'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Qwen-Code CLI
+      shell: bash
+      run: |
+        if ! command -v qwen >/dev/null 2>&1; then
+          npm install -g @qwen-code/qwen-code
+        fi
+    - name: Run Smart Doc
+      shell: bash
+      env:
+        INPUT_BRANCH: ${{ inputs.branch }}
+        INPUT_DOCS_FOLDER: ${{ inputs.docs_folder }}
+        INPUT_PROMPT_TEMPLATE: ${{ inputs.prompt_template }}
+        INPUT_GENERATE_HISTORY: ${{ inputs.generate_history }}
+        INPUT_SMART_DOC_API_TOKEN: ${{ inputs.smart_doc_api_token }}
+        INPUT_JIRA_HOST: ${{ inputs.jira_host }}
+        INPUT_JIRA_EMAIL: ${{ inputs.jira_email }}
+        INPUT_JIRA_API_TOKEN: ${{ inputs.jira_api_token }}
+        INPUT_CLICKUP_TOKEN: ${{ inputs.clickup_token }}
+      run: bash "${GITHUB_ACTION_PATH}/entrypoint.sh"
+
+permissions:
+  contents: write
+  pull-requests: read
+
