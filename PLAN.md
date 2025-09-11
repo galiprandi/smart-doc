@@ -42,7 +42,9 @@ Usar un nombre genérico como `SMART_DOC_API_TOKEN`:
 - Es claro para usuarios finales
 - Evita confusión con servicios externos
 
-**Todas las referencias en el plan se actualizarán a este nuevo nombre.**
+Además: en este repositorio `SMART_DOC_API_TOKEN` se usa como alias de `OPENAI_API_KEY` (OpenAI). Si el usuario define ambos, `OPENAI_API_KEY` tiene prioridad. El modelo por defecto (temporal) es `openai:gpt-5-nano`.
+
+**Todas las referencias en el plan se actualizan a este comportamiento.**
 
 ---
 
@@ -72,10 +74,7 @@ Usar un nombre genérico como `SMART_DOC_API_TOKEN`:
 ```
 smart-doc/
 ├── action.yml
-├── Dockerfile
 ├── entrypoint.sh
-├── lib/
-│   └── utils.js                  # (solo si necesitas lógica adicional)
 ├── prompts/
 │   ├── default.md                # Prompt base para documentación
 │   └── history.md                # Prompt para generar HISTORY.md
@@ -91,7 +90,7 @@ smart-doc/
 
 ```yaml
 name: 'Smart Doc'
-description: 'Automatically updates documentation using AI and enriches it with context from Jira & Clickup via MCP — powered by Qwen-Code.'
+description: 'Automatically updates documentation using AI and enriches it with context — powered by Qwen-Code.'
 branding:
   icon: 'book-open'
   color: 'purple'
@@ -113,32 +112,68 @@ inputs:
     description: 'Generate HISTORY.md with ticket context (default: true)'
     required: false
     default: 'true'
+  model:
+    description: 'Optional model id. If not provided, Qwen picks its default.'
+    required: false
+    default: ''
   smart_doc_api_token:
-    description: 'Your Qwen-Code API token (from ModelScope). Required for authentication.'
+    description: 'Your OpenAI API key (alias). Will be used as OPENAI_API_KEY.'
     required: true
+  openai_api_key:
+    description: 'Optional: OpenAI API key (overrides smart_doc_api_token if both provided)'
+    required: false
+    default: ''
   jira_host:
     description: 'Your Jira Cloud host (e.g., https://your-company.atlassian.net)'
     required: false
+    default: ''
   jira_email:
     description: 'Your Jira account email (for MCP auth)'
     required: false
+    default: ''
   jira_api_token:
-    description: 'Your Jira API token (generate at https://id.atlassian.com/manage-profile/security/api-tokens)'
+    description: 'Your Jira API token'
     required: false
+    default: ''
   clickup_token:
-    description: 'Your Clickup Personal Access Token (generate at https://app.clickup.com/account/developer)'
+    description: 'Your Clickup Personal Access Token'
     required: false
+    default: ''
 
 runs:
-  using: 'node20'
-  main: 'entrypoint.sh'
+  using: 'composite'
+  steps:
+    - name: Install Qwen-Code CLI
+      shell: bash
+      run: |
+        if ! command -v qwen >/dev/null 2>&1; then
+          npm install -g @qwen-code/qwen-code
+        fi
+    - name: Run Smart Doc
+      shell: bash
+      env:
+        INPUT_BRANCH: ${{ inputs.branch }}
+        INPUT_DOCS_FOLDER: ${{ inputs.docs_folder }}
+        INPUT_PROMPT_TEMPLATE: ${{ inputs.prompt_template }}
+        INPUT_GENERATE_HISTORY: ${{ inputs.generate_history }}
+        INPUT_MODEL: ${{ inputs.model }}
+        INPUT_SMART_DOC_API_TOKEN: ${{ inputs.smart_doc_api_token }}
+        INPUT_OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+        INPUT_JIRA_HOST: ${{ inputs.jira_host }}
+        INPUT_JIRA_EMAIL: ${{ inputs.jira_email }}
+        INPUT_JIRA_API_TOKEN: ${{ inputs.jira_api_token }}
+        INPUT_CLICKUP_TOKEN: ${{ inputs.clickup_token }}
+        GH_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ github.token }}
+      run: bash "${GITHUB_ACTION_PATH}/entrypoint.sh"
 
 permissions:
   contents: write
   pull-requests: read
 ```
 
-> ✅ Usa `using: node20` — no necesitas Docker. Qwen-Code es un binario Node.js empaquetado.
+> ✅ Arquitectura actual: Composite Action (Bash). Sin Docker ni `using: node20`.  
+> ✅ Modelo por defecto (temporal): `openai:gpt-5-nano` (configurable con input `model`).
 
 ---
 
@@ -154,36 +189,36 @@ Qwen-Code se instala directamente con `npm` en Node 20.
 ### 🛠️ 3. `entrypoint.sh`
 
 ```bash
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Leer inputs
 INPUT_BRANCH=${INPUT_BRANCH:-main}
 INPUT_DOCS_FOLDER=${INPUT_DOCS_FOLDER:-docs}
-INPUT_PROMPT_TEMPLATE=${INPUT_PROMPT_TEMPLATE}
+INPUT_PROMPT_TEMPLATE=${INPUT_PROMPT_TEMPLATE:-}
 INPUT_GENERATE_HISTORY=${INPUT_GENERATE_HISTORY:-true}
-INPUT_SMART_DOC_API_TOKEN=$INPUT_SMART_DOC_API_TOKEN
-INPUT_JIRA_HOST=$INPUT_JIRA_HOST
-INPUT_JIRA_EMAIL=$INPUT_JIRA_EMAIL
-INPUT_JIRA_API_TOKEN=$INPUT_JIRA_API_TOKEN
-INPUT_CLICKUP_TOKEN=$INPUT_CLICKUP_TOKEN
+INPUT_MODEL=${INPUT_MODEL:-}
+INPUT_SMART_DOC_API_TOKEN=${INPUT_SMART_DOC_API_TOKEN:-}
+INPUT_OPENAI_API_KEY=${INPUT_OPENAI_API_KEY:-}
+INPUT_JIRA_HOST=${INPUT_JIRA_HOST:-}
+INPUT_JIRA_EMAIL=${INPUT_JIRA_EMAIL:-}
+INPUT_JIRA_API_TOKEN=${INPUT_JIRA_API_TOKEN:-}
+INPUT_CLICKUP_TOKEN=${INPUT_CLICKUP_TOKEN:-}
 
-# Verificar token obligatorio
-if [ -z "$INPUT_SMART_DOC_API_TOKEN" ]; then
-  echo "::error::Input 'smart_doc_api_token' is required"
-  exit 1
+# Auth mapping
+if [[ -n "$INPUT_OPENAI_API_KEY" ]]; then export OPENAI_API_KEY="$INPUT_OPENAI_API_KEY"; fi
+if [[ -z "${OPENAI_API_KEY:-}" && -n "$INPUT_SMART_DOC_API_TOKEN" ]]; then export OPENAI_API_KEY="$INPUT_SMART_DOC_API_TOKEN"; fi
+if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+  echo "[smart-doc] Auth configured: OPENAI_API_KEY is set for Qwen-Code."
+else
+  echo "::warning::No OPENAI_API_KEY configured; Qwen-Code may fail to run."
 fi
 
 # Configurar git
 git config --global user.name "GitHub Action"
 git config --global user.email "action@github.com"
 
-# Detectar si estamos en el branch correcto
-CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-if [[ "$CURRENT_BRANCH" != "$INPUT_BRANCH" ]]; then
-  echo "::warning::This action only runs on branch $INPUT_BRANCH. Current branch is $CURRENT_BRANCH."
-  exit 0
-fi
+mkdir -p "$INPUT_DOCS_FOLDER"
 
 # Instalar Qwen Code (si no está instalado)
 if ! command -v qwen &> /dev/null; then
@@ -191,9 +226,7 @@ if ! command -v qwen &> /dev/null; then
   npm install -g @qwen-code/qwen-code
 fi
 
-# Autenticar con Qwen-Code
-echo "Authenticating with Qwen-Code..."
-qwen login --token "$INPUT_SMART_DOC_API_TOKEN"
+# (Sin login explícito; Qwen usará OPENAI_API_KEY si está presente)
 
 # Crear configuración de MCP (settings.json)
 mkdir -p ~/.qwen
@@ -226,18 +259,29 @@ if [ -z "$INPUT_CLICKUP_TOKEN" ]; then
   sed -i '/"clickup": {/,/}/d' ~/.qwen/settings.json
 fi
 
-# Obtener cambios del último commit
-echo "🔍 Analyzing changes since last commit..."
-git fetch origin $INPUT_BRANCH
-CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+# Obtener cambios con GitHub API
+EVENT_NAME=${GITHUB_EVENT_NAME:-push}
+REPO=${GITHUB_REPOSITORY}
+if [[ "$EVENT_NAME" == "pull_request" ]]; then
+  BASE=${GITHUB_BASE_REF}
+  HEAD=${GITHUB_SHA}
+  CHANGED_FILES=$(gh api repos/${REPO}/compare/${BASE}...${HEAD} --jq '.files[].filename' 2>/dev/null || true)
+else
+  BASE=$(jq -r '.before // empty' "$GITHUB_EVENT_PATH" || true)
+  HEAD=${GITHUB_SHA}
+  if [[ -n "$BASE" ]]; then
+    CHANGED_FILES=$(gh api repos/${REPO}/compare/${BASE}...${HEAD} --jq '.files[].filename' 2>/dev/null || true)
+  else
+    CHANGED_FILES=$(git ls-files || true)
+  fi
+fi
 
 if [ -z "$CHANGED_FILES" ]; then
   echo "✅ No files changed. Nothing to document."
   exit 0
 fi
 
-echo "📄 Changed files:"
-echo "$CHANGED_FILES"
+echo "📄 Changed files:"; echo "$CHANGED_FILES"
 
 # Construir prompt dinámico
 PROMPT="Analiza los cambios en este repositorio. Actualiza o crea archivos .md en la carpeta $INPUT_DOCS_FOLDER. Usa Markdown. Incluye contexto de tickets Jira/Clickup si están presentes en commits o PRs. Finalmente, genera o actualiza HISTORY.md con formato profesional: encabezado ##, fecha, autor, scope, TL;DR, y links a Jira/Clickup."
@@ -247,23 +291,24 @@ if [ -n "$INPUT_PROMPT_TEMPLATE" ] && [ -f "$INPUT_PROMPT_TEMPLATE" ]; then
   PROMPT=$(cat "$INPUT_PROMPT_TEMPLATE")
 fi
 
-# Ejecutar Qwen-Code
+# Ejecutar Qwen-Code (no interactivo). Si no hay `model`, dejar que Qwen elija.
 echo "🚀 Running Smart Doc with Qwen-Code..."
-qwen exec \
-  --model qwen-code \
-  --prompt "$PROMPT"
+if [[ -n "$INPUT_MODEL" ]]; then
+  qwen --model "$INPUT_MODEL" --prompt "$PROMPT" || true
+else
+  qwen --prompt "$PROMPT" || true
+fi
 
 # Commit y push cambios
-git add .
+git add -A
 git commit -m "docs: update documentation via Smart Doc" || echo "No changes to commit"
-git push
+git push || echo "::warning::Git push failed (permissions?)"
 
 echo "🎉 Smart Doc completed successfully!"
 ```
 
-> ✅ Usa `sed` para eliminar entradas MCP vacías — evita errores si el usuario no configura Jira/Clickup.
-> ✅ El `settings.json` se genera dinámicamente con credenciales seguras (no se expone en logs).
-> ✅ No se usan variables de entorno sensibles fuera de `qwen login`.
+> ✅ GH CLI para diffs (`gh api repos/.../compare/base...head`) y comentario en PR.  
+> ✅ `SMART_DOC_API_TOKEN` = `OPENAI_API_KEY`. Si no se especifica `model`, Qwen elige el default.
 
 ---
 
@@ -354,44 +399,40 @@ name: Test Smart Doc
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: write
+  pull-requests: read
 
 jobs:
-  test:
+  smart-doc:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Install Qwen Code
-        run: npm install -g @qwen-code/qwen-code
+      - name: Run Smart Doc (local action)
+        uses: ./
+        with:
+          smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
+          # openai_api_key: ${{ secrets.OPENAI_API_KEY }} # opcional, tiene prioridad
+          branch: main
+          docs_folder: docs
+          generate_history: 'true'
 
-      - name: Configure Qwen
-        env:
-          SMART_DOC_API_TOKEN: "test-token-for-testing"
-        run: |
-          qwen login --token $SMART_DOC_API_TOKEN
-          mkdir -p ~/.qwen
-          cat > ~/.qwen/settings.json << 'EOF'
-{
-  "mcpServers": {
-    "jira": {
-      "command": "curl -s -X POST https://mock-jira.com/v1/query",
-      "env": {
-        "ATLASSIAN_HOST": "https://mock.atlassian.net",
-        "ATLASSIAN_EMAIL": "test@test.com",
-        "ATLASSIAN_TOKEN": "mock-token"
-      }
-    }
-  }
-}
-EOF
-
-      - name: Run Dry Run
-        run: |
-          echo "=== DRY RUN ==="
-          qwen exec --model qwen-code --prompt "Simulate updating documentation for src/utils/auth.js. Do not make real changes. Just output what you would do."
+      - name: Upload docs preview (PR only)
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: smart-doc-output
+          path: |
+            docs/**
+            HISTORY.md
+          if-no-files-found: ignore
 ```
 
 ---
@@ -521,14 +562,15 @@ SOFTWARE.
 | Nombre `smart-doc` | ✅ | Disponible en Marketplace |
 | Prompt por defecto desde GA repo | ✅ | En `prompts/default.md` |
 | Integración Jira/Clickup via MCP | ✅ | Configurado dinámicamente en `settings.json` |
-| No requiere Docker | ✅ | Usa `node20`, sin contenedor |
+| Arquitectura | ✅ | Composite (Bash), sin Docker |
 | No requiere CLI local de MCP | ✅ | MCP se invoca remotamente por Qwen-Code |
-| Requiere credenciales | ✅ | Solo `SMART_DOC_API_TOKEN` es obligatorio |
+| Requiere credenciales | ✅ | `SMART_DOC_API_TOKEN` (= `OPENAI_API_KEY`) |
 | HISTORY.md auto-generado | ✅ | Incluido en el prompt |
 | Trigger definido por usuario | ✅ | `on: push` en workflow del usuario |
 | Branch configurable | ✅ | Input `branch` |
 | Seguridad máxima | ✅ | Nada expuesto. Todo via secrets. |
-| Tokens renombrados | ✅ | `MODELSCOPE_API_TOKEN` → `SMART_DOC_API_TOKEN` |
+| Tokens y mapping | ✅ | `MODELSCOPE_API_TOKEN` → `SMART_DOC_API_TOKEN` = `OPENAI_API_KEY` |
+| Detección de cambios | ✅ | `gh api repos/.../compare/base...head` |
 | Soporte para PR titles | ✅ | Qwen-Code analiza commits + PR titles automáticamente |
 
 ---

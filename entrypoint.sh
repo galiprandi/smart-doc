@@ -46,12 +46,13 @@ else
   warn "No OPENAI_API_KEY configured; Qwen-Code may fail to run."
 fi
 
-# Select model: use user-provided if any; otherwise let Qwen choose its default
+# Select model: use user-provided if any; otherwise use temporary default
 MODEL="$INPUT_MODEL"
 if [[ -n "$MODEL" ]]; then
   log "Using model: $MODEL"
 else
-  log "No model specified; letting Qwen choose the default."
+  MODEL="openai:gpt-5-nano"
+  log "No model specified; using temporary default model: $MODEL"
 fi
 
 # Prepare optional MCP settings if any secret present
