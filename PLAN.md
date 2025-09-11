@@ -42,7 +42,7 @@ Usar un nombre genérico como `SMART_DOC_API_TOKEN`:
 - Es claro para usuarios finales
 - Evita confusión con servicios externos
 
-Además: en este repositorio `SMART_DOC_API_TOKEN` se usa como alias de `OPENAI_API_KEY` (OpenAI). Si el usuario define ambos, `OPENAI_API_KEY` tiene prioridad. El modelo por defecto (temporal) es `openai:gpt-5-nano`.
+Además: en este repositorio `SMART_DOC_API_TOKEN` se usa como alias de `OPENAI_API_KEY` (OpenAI) y es el único mecanismo soportado. No se deben definir ambos simultáneamente. El modelo por defecto (temporal) es `openai:gpt-5-nano`.
 
 **Todas las referencias en el plan se actualizan a este comportamiento.**
 
@@ -119,10 +119,6 @@ inputs:
   smart_doc_api_token:
     description: 'Your OpenAI API key (alias). Will be used as OPENAI_API_KEY.'
     required: true
-  openai_api_key:
-    description: 'Optional: OpenAI API key (overrides smart_doc_api_token if both provided)'
-    required: false
-    default: ''
   jira_host:
     description: 'Your Jira Cloud host (e.g., https://your-company.atlassian.net)'
     required: false
@@ -158,7 +154,6 @@ runs:
         INPUT_GENERATE_HISTORY: ${{ inputs.generate_history }}
         INPUT_MODEL: ${{ inputs.model }}
         INPUT_SMART_DOC_API_TOKEN: ${{ inputs.smart_doc_api_token }}
-        INPUT_OPENAI_API_KEY: ${{ inputs.openai_api_key }}
         INPUT_JIRA_HOST: ${{ inputs.jira_host }}
         INPUT_JIRA_EMAIL: ${{ inputs.jira_email }}
         INPUT_JIRA_API_TOKEN: ${{ inputs.jira_api_token }}

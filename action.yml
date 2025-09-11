@@ -26,7 +26,7 @@ inputs:
     required: false
     default: 'true'
   smart_doc_api_token:
-    description: 'Your OpenAI API key (alias). Will be used as OPENAI_API_KEY by Qwen-Code.'
+    description: 'Your OpenAI API key (alias). Exported as OPENAI_API_KEY.'
     required: true
   jira_host:
     description: 'Your Jira Cloud host (e.g., https://your-company.atlassian.net)'
@@ -44,11 +44,6 @@ inputs:
     description: 'Your Clickup Personal Access Token'
     required: false
     default: ''
-  openai_api_key:
-    description: 'Optional: OpenAI API key (overrides smart_doc_api_token if both provided)'
-    required: false
-    default: ''
-
 runs:
   using: 'composite'
   steps:
@@ -67,7 +62,6 @@ runs:
         INPUT_MODEL: ${{ inputs.model }}
         INPUT_GENERATE_HISTORY: ${{ inputs.generate_history }}
         INPUT_SMART_DOC_API_TOKEN: ${{ inputs.smart_doc_api_token }}
-        INPUT_OPENAI_API_KEY: ${{ inputs.openai_api_key }}
         INPUT_JIRA_HOST: ${{ inputs.jira_host }}
         INPUT_JIRA_EMAIL: ${{ inputs.jira_email }}
         INPUT_JIRA_API_TOKEN: ${{ inputs.jira_api_token }}

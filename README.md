@@ -9,9 +9,9 @@ Key points
 
 Usage
 1) Add auth secret for Qwen-Code.
-   - SMART_DOC_API_TOKEN = OPENAI_API_KEY. Put your OpenAI key in `SMART_DOC_API_TOKEN` and the action will export it as `OPENAI_API_KEY`.
-   - Opcional: también puedes definir `OPENAI_API_KEY` directamente; si ambos existen, `OPENAI_API_KEY` tiene prioridad.
-   - Dónde: `Settings` → `Secrets and variables` → `Actions` → `New repository secret`.
+   - SMART_DOC_API_TOKEN = OPENAI_API_KEY. Put your OpenAI key in `SMART_DOC_API_TOKEN`; the action exports it as `OPENAI_API_KEY`.
+   - Do NOT define both `SMART_DOC_API_TOKEN` and `OPENAI_API_KEY`. The action will fail if both are set with different values.
+   - Where: `Settings` → `Secrets and variables` → `Actions` → `New repository secret`.
 2) Create workflow `.github/workflows/docs.yml`:
 
 ```yaml
@@ -46,7 +46,6 @@ jobs:
 
 Inputs
 - `smart_doc_api_token` (required): OpenAI API key alias. Mapped to `OPENAI_API_KEY`.
-- `openai_api_key` (optional): If provided, overrides `smart_doc_api_token`.
 - `branch` (default: `main`): reference branch for diffs.
 - `docs_folder` (default: `docs`): documentation directory; created if missing.
 - `prompt_template` (optional): path to custom prompt in repo.
@@ -66,9 +65,7 @@ Notes on MCP
 
 Secrets
 - Required:
-  - `SMART_DOC_API_TOKEN`: Put your OpenAI API key here (this action exports it as `OPENAI_API_KEY`).
-- Optional:
-  - `OPENAI_API_KEY`: Alternative to the above; if both are set, this one wins.
+  - `SMART_DOC_API_TOKEN`: Put your OpenAI API key here (this action exports it as `OPENAI_API_KEY`). Do not also set `OPENAI_API_KEY`.
 - Optional (only if you want ticket enrichment):
   - `JIRA_HOST` (e.g., `https://your-company.atlassian.net`)
   - `JIRA_EMAIL`

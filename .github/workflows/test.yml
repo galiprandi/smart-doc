@@ -22,7 +22,6 @@ jobs:
         uses: ./
         with:
           smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
-          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           branch: main
           docs_folder: docs
           generate_history: 'true'

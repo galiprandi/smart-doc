@@ -11,18 +11,18 @@ INPUT_DOCS_FOLDER=${INPUT_DOCS_FOLDER:-docs}
 INPUT_PROMPT_TEMPLATE=${INPUT_PROMPT_TEMPLATE:-}
 INPUT_GENERATE_HISTORY=${INPUT_GENERATE_HISTORY:-true}
 INPUT_SMART_DOC_API_TOKEN=${INPUT_SMART_DOC_API_TOKEN:-}
-INPUT_OPENAI_API_KEY=${INPUT_OPENAI_API_KEY:-}
 INPUT_MODEL=${INPUT_MODEL:-}
 INPUT_JIRA_HOST=${INPUT_JIRA_HOST:-}
 INPUT_JIRA_EMAIL=${INPUT_JIRA_EMAIL:-}
 INPUT_JIRA_API_TOKEN=${INPUT_JIRA_API_TOKEN:-}
 INPUT_CLICKUP_TOKEN=${INPUT_CLICKUP_TOKEN:-}
 
-## Auth mapping: prefer explicit openai_api_key, else use smart_doc_api_token
-if [[ -n "$INPUT_OPENAI_API_KEY" ]]; then
-  export OPENAI_API_KEY="$INPUT_OPENAI_API_KEY"
+## Auth mapping: only SMART_DOC_API_TOKEN is supported (maps to OPENAI_API_KEY)
+if [[ -n "${OPENAI_API_KEY:-}" && -n "$INPUT_SMART_DOC_API_TOKEN" && "$OPENAI_API_KEY" != "$INPUT_SMART_DOC_API_TOKEN" ]]; then
+  err "Both OPENAI_API_KEY and SMART_DOC_API_TOKEN are defined with different values. Define ONLY SMART_DOC_API_TOKEN."
+  exit 1
 fi
-if [[ -z "${OPENAI_API_KEY:-}" && -n "$INPUT_SMART_DOC_API_TOKEN" ]]; then
+if [[ -n "$INPUT_SMART_DOC_API_TOKEN" ]]; then
   export OPENAI_API_KEY="$INPUT_SMART_DOC_API_TOKEN"
 fi
 
@@ -40,11 +40,11 @@ if ! command -v qwen >/dev/null 2>&1; then
 fi
 
 # Authentication
-if [[ -n "${OPENAI_API_KEY:-}" ]]; then
-  log "Auth configured: OPENAI_API_KEY is set for Qwen-Code."
-else
-  warn "No OPENAI_API_KEY configured; Qwen-Code may fail to run."
+if [[ -z "${OPENAI_API_KEY:-}" ]]; then
+  err "SMART_DOC_API_TOKEN is required and must contain your OpenAI API key."
+  exit 1
 fi
+log "Auth configured: OPENAI_API_KEY is set for Qwen-Code."
 
 # Select model: use user-provided if any; otherwise use temporary default
 MODEL="$INPUT_MODEL"
