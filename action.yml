@@ -17,6 +17,10 @@ inputs:
     description: 'Path to custom prompt template in your repo (optional)'
     required: false
     default: ''
+  model:
+    description: 'Optional model id. If OPENAI is used, default is openai:gpt-4o-mini. Otherwise defaults to qwen-code.'
+    required: false
+    default: ''
   generate_history:
     description: 'Generate HISTORY.md with ticket context (default: true)'
     required: false
@@ -60,6 +64,7 @@ runs:
         INPUT_BRANCH: ${{ inputs.branch }}
         INPUT_DOCS_FOLDER: ${{ inputs.docs_folder }}
         INPUT_PROMPT_TEMPLATE: ${{ inputs.prompt_template }}
+        INPUT_MODEL: ${{ inputs.model }}
         INPUT_GENERATE_HISTORY: ${{ inputs.generate_history }}
         INPUT_SMART_DOC_API_TOKEN: ${{ inputs.smart_doc_api_token }}
         INPUT_OPENAI_API_KEY: ${{ inputs.openai_api_key }}
