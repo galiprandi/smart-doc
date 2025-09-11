@@ -12,6 +12,7 @@ INPUT_PROMPT_TEMPLATE=${INPUT_PROMPT_TEMPLATE:-}
 INPUT_GENERATE_HISTORY=${INPUT_GENERATE_HISTORY:-true}
 INPUT_SMART_DOC_API_TOKEN=${INPUT_SMART_DOC_API_TOKEN:-}
 INPUT_OPENAI_API_KEY=${INPUT_OPENAI_API_KEY:-}
+INPUT_MODEL=${INPUT_MODEL:-}
 INPUT_JIRA_HOST=${INPUT_JIRA_HOST:-}
 INPUT_JIRA_EMAIL=${INPUT_JIRA_EMAIL:-}
 INPUT_JIRA_API_TOKEN=${INPUT_JIRA_API_TOKEN:-}
@@ -43,6 +44,14 @@ if [[ -n "${OPENAI_API_KEY:-}" ]]; then
   log "Auth configured: OPENAI_API_KEY is set for Qwen-Code."
 else
   warn "No OPENAI_API_KEY configured; Qwen-Code may fail to run."
+fi
+
+# Select model: use user-provided if any; otherwise let Qwen choose its default
+MODEL="$INPUT_MODEL"
+if [[ -n "$MODEL" ]]; then
+  log "Using model: $MODEL"
+else
+  log "No model specified; letting Qwen choose the default."
 fi
 
 # Prepare optional MCP settings if any secret present
@@ -143,8 +152,13 @@ fi
 run_with_variants() {
   local prompt_file="$1"
   set +e
-  qwen --model qwen-code --prompt "$(cat "$prompt_file")" && return 0
-  qwen --model qwen-code < "$prompt_file" && return 0
+  if [[ -n "$MODEL" ]]; then
+    qwen --model "$MODEL" --prompt "$(cat "$prompt_file")" && return 0
+    qwen --model "$MODEL" < "$prompt_file" && return 0
+  else
+    qwen --prompt "$(cat "$prompt_file")" && return 0
+    qwen < "$prompt_file" && return 0
+  fi
   set -e
   return 1
 }

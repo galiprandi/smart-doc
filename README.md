@@ -4,14 +4,14 @@ Smart Doc is a simple composite GitHub Action that analyzes code changes and upd
 
 Key points
 - Composite action (Bash): minimal and maintainable.
-- Uses Qwen-Code CLI. If auth is provided, defaults to `openai:gpt-4o-mini`; otherwise uses `qwen-code`.
+- Uses Qwen-Code CLI. If no model is provided, Qwen chooses the default.
 - MCP (Jira/ClickUp) optional via `~/.qwen/settings.json` when secrets are provided.
 
 Usage
 1) Add auth secret for Qwen-Code.
-   - Use `SMART_DOC_API_TOKEN` with your OpenAI API key (this action maps it to `OPENAI_API_KEY`).
-   - Optional: you can also set `OPENAI_API_KEY` directly; if both are provided, `OPENAI_API_KEY` takes precedence.
-   - Add under: `Settings` → `Secrets and variables` → `Actions` → `New repository secret`.
+   - SMART_DOC_API_TOKEN = OPENAI_API_KEY. Put your OpenAI key in `SMART_DOC_API_TOKEN` and the action will export it as `OPENAI_API_KEY`.
+   - Opcional: también puedes definir `OPENAI_API_KEY` directamente; si ambos existen, `OPENAI_API_KEY` tiene prioridad.
+   - Dónde: `Settings` → `Secrets and variables` → `Actions` → `New repository secret`.
 2) Create workflow `.github/workflows/docs.yml`:
 
 ```yaml
@@ -51,14 +51,14 @@ Inputs
 - `docs_folder` (default: `docs`): documentation directory; created if missing.
 - `prompt_template` (optional): path to custom prompt in repo.
 - `generate_history` (default: `true`): ensure `HISTORY.md` exists in root.
-- `model` (optional): override model (e.g., `openai:gpt-4o-mini`). Default depends on auth.
+- `model` (optional): override model (e.g., `openai:gpt-4o-mini`). If not set, Qwen picks the default.
 - Optional MCP: `jira_host`, `jira_email`, `jira_api_token`, `clickup_token`.
 
 How it works
 - Computes changed files using GitHub API via `gh api repos/<owner>/<repo>/compare/<base>...<head>`.
 - Builds the prompt (custom or default) and appends changed files context.
-- Picks model automatically (OpenAI vs Qwen) unless overridden.
-- Runs `qwen -m <model> -p "..."` in non‑interactive mode.
+- Uses model set by `model` input; if empty, lets Qwen choose.
+- Runs `qwen` in non‑interactive mode con `-p` o vía stdin.
 - Posts a PR comment summary (on PRs). On `push` events, stages/commits/pushes doc changes.
 
 Notes on MCP
