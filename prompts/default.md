@@ -22,6 +22,19 @@ Output behavior
 - Write/update files directly under `docs/` (and `SMART_TIMELINE.md` if appropriate). Do not print extra console output.
 - Keep documents in English and align terminology with what appears in the diff.
 
+Semantic Markdown requirements (strict)
+- Headings: use `#` to `####` with a clear hierarchy. Exactly one H1 per file. No empty headings.
+- Sections: keep sections short, focused, and ordered logically (Overview → How it works → Configuration → FAQ, etc.).
+- Lists: prefer unordered lists for short items and ordered lists for steps. One idea per bullet; avoid nested lists deeper than 2 levels.
+- Links: use descriptive text (no “here”). Prefer relative links within the repo (e.g., `../README.md`).
+- Code: fenced code blocks with a language tag (```bash, ```yaml, ```json, ```mermaid). Use inline code for identifiers (`like_this`).
+- Tables: only when they increase scannability. Use a header row and concise cells.
+- GitHub Flavored Markdown (GFM): you may use GFM features when helpful — task lists (`- [ ]`), tables, strikethrough (`~~text~~`), and autolink literals. Avoid raw HTML.
+- Images/diagrams: prefer Mermaid blocks over screenshots. If images are necessary, include meaningful alt text.
+- Accessibility: avoid vague words like “click here”; use semantic headings instead of bold text for titles.
+- Style: concise, active voice. Avoid redundancy and boilerplate. No raw HTML unless strictly needed.
+- Formatting hygiene: wrap lines reasonably (≤120 chars), no trailing spaces, end files with a single trailing newline.
+
 Change log (optional)
 - File: `SMART_TIMELINE.md` at the repo root. Append-only; never rewrite or reorder prior entries.
 - Language: English only.
