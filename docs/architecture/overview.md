@@ -9,11 +9,11 @@ Key Flow
 - Build a structured prompt, including unified diffs.
 - Invoke Codex CLI with `CODEX_SANDBOX=workspace-write` and `CODEX_REASONING_EFFORT=medium`.
 - Fallback to `npx -y @openai/codex` if local binaries aren’t present.
-- On push events, commit and push any doc changes; on PR events, skip pushing and optionally comment a summary.
+- On push events, commit and push any doc changes; on PR events, skip pushing and upload a docs preview artifact.
 
-Positioning Update (This Commit)
-- Clarified product positioning: “living documentation” with provider‑agnostic design — OpenAI first‑class, adaptable to Qwen/Qwen‑Code.
-- Public usage updated to `galiprandi/smart-doc@v1`.
+Workflow Changes (This Commit)
+- Add self‑commit guard on push to avoid regeneration loops from Smart Doc’s own commits.
+- Upload docs preview artifact on PRs for easy inspection.
 
 Quality Attributes
 - Safety: Workspace-write sandbox limits write scope to the repository.
@@ -22,4 +22,3 @@ Quality Attributes
 
 Open Questions
 - TODO: Document Qwen/Qwen‑Code setup if adopted.
-- TODO: Clarify Codex CLI default approval mode when `--approval` is omitted and how to override it if needed.

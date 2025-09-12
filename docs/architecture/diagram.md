@@ -2,7 +2,8 @@ Mermaid Diagram
 
 ```mermaid
 flowchart TD
-    GH[GitHub Action Runtime]
+    GH[GitHub Actions Runtime]
+    SELF{Self-commit?}
     EP[entrypoint.sh]
     PROMPT[Build Prompt + Diffs]
     CODEBIN{Codex Binary Available?}
@@ -11,24 +12,26 @@ flowchart TD
     NPX[npx -y @openai/codex exec --sandbox workspace-write]
     DOCS[Write docs under docs/]
     GIT[(git add/commit/push on push events)]
+    ARTIFACT[[Upload docs preview (PR)]]
 
-    GH --> EP --> PROMPT --> CODEBIN
+    GH --> SELF
+    SELF -- yes -->|skip generation| ARTIFACT
+    SELF -- no --> EP --> PROMPT --> CODEBIN
     CODEBIN -->|VSCode code| CODE --> DOCS
     CODEBIN -->|codex| CODEX --> DOCS
     CODEBIN -->|fallback| NPX --> DOCS
     DOCS --> GIT
+    DOCS -. PR only .-> ARTIFACT
 
     note right of EP
-      Exports:
+      Exports (examples):
       - CODEX_SANDBOX=workspace-write
       - CODEX_REASONING_EFFORT=medium
-      Removed:
-      - CODEX_APPROVAL / --approval flag
     end note
 
     note left of GH
-      Provider compatibility:
-      - Primary: OpenAI (Codex/GPT‑5)
-      - Adaptable: Qwen/Qwen‑Code (optional)
+      CI specifics in this repo:
+      - Self-commit guard on push
+      - PR preview via upload-artifact
     end note
 ```

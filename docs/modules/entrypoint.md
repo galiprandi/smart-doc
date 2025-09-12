@@ -20,21 +20,16 @@ Public Interface (env inputs)
 Important Environment Variables
 - `CODEX_SANDBOX=workspace-write` — constrains writes to repository workspace.
 - `CODEX_REASONING_EFFORT=medium` — hints reasoning depth to Codex CLI.
-- Removed in this commit: `CODEX_APPROVAL` is no longer exported or used.
-
-Behavior Change (This Commit)
-- The `--approval` flag is no longer passed to `code/codex/@openai/codex exec`.
-- Result: Approval behavior is now governed by the Codex CLI defaults.
+ 
+Notes
+- Self‑commit detection and skipping are handled by the workflow layer (not by `entrypoint.sh`).
 
 Dependencies
 - External CLIs: `gh`, `jq`, `git`, and one of `code`/`codex`/`node+npx`.
 - Services: OpenAI Codex CLI (local or via `npx`), OpenAI Responses API (fallback path).
 
 Risks
-- Unknown default approval behavior may surprise users expecting explicit `never` behavior.
 - Fallback to `npx` requires network access to install/execute `@openai/codex` if not cached.
 
 TODOs
-- Confirm and document the default approval policy of Codex CLI when `--approval` is omitted.
-- Provide guidance for users who need a specific approval mode.
-
+- Provide guidance for users who need a specific approval mode (if required).

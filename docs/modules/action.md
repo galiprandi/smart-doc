@@ -7,6 +7,7 @@ Responsibilities
 - Declares inputs (branch, docs folder, prompt, model, history, auth, optional ticket vars).
 - Installs OpenAI Codex CLI if missing and invokes `entrypoint.sh`.
 - Sets permissions for repo write (contents) and PR read.
+ - Designed to be used from the marketplace (`galiprandi/smart-doc@v1`) or locally (`uses: ./`) in CI.
 
 Public Inputs
 - `smart_doc_api_token` (required): API key alias; exported as `OPENAI_API_KEY`.
@@ -23,8 +24,8 @@ Compatibility
 
 Notes
 - Uses a composite (`using: composite`); no Docker needed.
-- Usage example aligns with `galiprandi/smart-doc@v1` as per README.
-- No breaking input changes in this commit; description updated to reflect provider‑agnostic positioning.
+- Usage example aligns with `galiprandi/smart-doc@v1` as per README; CI in this repo references the local action via `uses: ./`.
+- No breaking input changes in this commit.
  - When `generate_history` is enabled, entries must follow strict formatting:
    - English only; append‑only; no reordering.
    - Format per entry:
@@ -33,6 +34,10 @@ Notes
      - Scope: <areas/modules>
      - TL;DR: <one-sentence summary>
    - Spacing: blank line before each new entry (ensure trailing newline first), exactly one blank line between entries, no horizontal rules, end file with a single trailing newline.
+
+Workflow Additions (This Commit)
+- Push events: guard against Smart Doc self‑commits to avoid loops.
+- PRs: upload a docs preview artifact (`docs/**` and `HISTORY.md`).
 
 TODO
 - Document a Qwen/Qwen‑Code configuration path if adopted.

@@ -17,3 +17,8 @@
 - Date: 2025-09-12
 - Scope: prompts, docs
 - TL;DR: Documented strict HISTORY.md entry format and spacing; updated docs to reflect requirements.
+
+## CI: self-commit guard and PR preview
+- Date: 2025-09-12
+- Scope: workflow, docs
+- TL;DR: Added self-commit detection to skip generation loops on push and upload a docs preview artifact on PRs; updated docs and examples accordingly.

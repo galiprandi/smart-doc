@@ -4,9 +4,9 @@ Purpose
 - Keep repository documentation living and change‑driven by analyzing diffs and writing updates under `docs/` (and optionally `HISTORY.md`).
 
 This Commit
-- Updated positioning: living documentation, provider‑agnostic with OpenAI first‑class and adaptable to Qwen/Qwen‑Code.
-- Usage example now references `galiprandi/smart-doc@v1`.
-- Action description clarified to include README, stack, architecture, and modules as target outputs.
+- CI workflow renamed job to `smart-doc` and added a self‑commit guard to avoid generation loops on pushes.
+- Added PR‑only docs preview via `actions/upload-artifact` (uploads `docs/**` and `HISTORY.md`).
+- Workflow example in README keeps `galiprandi/smart-doc@v1`; internal CI uses local action `./` and supports optional `prompt_template`.
 
 Quickstart
 - Trigger: Runs on push/PR via GitHub Actions.
@@ -51,7 +51,7 @@ Folder Structure
 
 Notes
 - Provider compatibility: OpenAI (Codex/GPT‑5) is primary; Qwen/Qwen‑Code is adaptable. TODO: Document Qwen setup if adopted.
-- Approval behavior follows Codex CLI defaults since no explicit `--approval` is passed.
+- PRs in this repo upload a preview artifact; pushes to `main` commit docs directly.
 
 Change Log Format (HISTORY.md)
 - Append‑only; never rewrite or reorder prior entries.

@@ -8,13 +8,13 @@ CLIs and Libraries
 - `gh` (GitHub CLI) — computes changed files/diffs for context.
 - `jq` — JSON extraction for prompt assembly and response parsing.
 - `curl` — used by the fallback OpenAI Responses API path.
+ - `actions/upload-artifact` — publishes docs preview on PRs.
 
 Environment and Variables
 - `SMART_DOC_API_TOKEN` — required; mapped to `OPENAI_API_KEY`.
 - `OPENAI_API_KEY` — used if provided; must match `SMART_DOC_API_TOKEN` when both are set.
 - `CODEX_SANDBOX=workspace-write` — constrains Codex writes to the repo workspace.
 - `CODEX_REASONING_EFFORT=medium` — hint to Codex CLI for reasoning depth.
-- Removed earlier: `CODEX_APPROVAL` — approval is not explicitly set.
 
 External Services
 - OpenAI Codex CLI (local binary or via `npx`).
@@ -26,12 +26,11 @@ Provider Compatibility
 
 Build/Test Tooling
 - GitHub Actions runtime executes `entrypoint.sh`.
-- Git stages/commits/pushes generated docs on push events; PRs skip push.
+- Git stages/commits/pushes generated docs on push events; PRs skip push and upload a preview artifact.
 
 Requirements
 - Runner tools: `gh`, `jq`, `git`, and at least one of `code`, `codex`, or `node + npx`.
 - Network access to OpenAI endpoints and for `npx @openai/codex` when needed.
 
 Notes
-- Approval behavior follows Codex CLI defaults since `--approval` is not provided.
-- TODO: Document Codex CLI default approval behavior and how to override it if necessary.
+- TODO: If alternative providers are configured (e.g., Qwen/Qwen‑Code), document setup.
