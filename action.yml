@@ -47,11 +47,11 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Install Qwen-Code CLI
+    - name: Install OpenAI Codex CLI
       shell: bash
       run: |
-        if ! command -v qwen >/dev/null 2>&1; then
-          npm install -g @qwen-code/qwen-code
+        if ! command -v code >/dev/null 2>&1; then
+          npm install -g @openai/codex
         fi
     - name: Run Smart Doc
       shell: bash

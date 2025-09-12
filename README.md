@@ -4,8 +4,8 @@ Smart Doc is a simple composite GitHub Action that analyzes code changes and upd
 
 Key points
 - Composite action (Bash): minimal and maintainable.
-- Uses OpenAI Responses API (no fallback seed; only writes when the model returns content). Default model: `gpt-5-nano`.
-- MCP (Jira/ClickUp) optional via `~/.qwen/settings.json` when secrets are provided.
+- Uses OpenAI Codex CLI (`@openai/codex`) via `code exec` con un prompt estructurado. No fuerza escrituras si no hay salida útil.
+- MCP (Jira/ClickUp) opcional (no requerido para Codex).
 
 Usage
 1) Add auth secret for Qwen-Code.
@@ -56,9 +56,7 @@ Inputs
 How it works
 - Computes changed files using GitHub API via `gh api repos/<owner>/<repo>/compare/<base>...<head>`.
 - Builds the prompt (custom or default) and appends changed files context.
-- Calls OpenAI Responses API with the selected model (default: `gpt-5-nano`).
-- Only writes files when the API returns usable content; otherwise it does nothing.
-- Posts a PR comment summary (on PRs). On `push` events, stages/commits/pushes doc changes.
+- Executes `code exec "<prompt>"`; si el agente modifica archivos, se detectan y se commitean en push a main. En PR no se hace push.
 
 Notes on MCP
 - MCP (Model Context Protocol) refers to external context providers the agent can query (e.g., Jira/ClickUp). This action only creates `~/.qwen/settings.json` if the related secrets are provided; otherwise it skips MCP entirely.

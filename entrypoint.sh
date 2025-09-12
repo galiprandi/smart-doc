@@ -40,62 +40,7 @@ if [[ -z "${OPENAI_API_KEY:-}" ]]; then
 fi
 log "Auth configured: OPENAI_API_KEY is set."
 
-# Select model: use user-provided if any; otherwise use temporary default
-MODEL="$INPUT_MODEL"
-if [[ -n "$MODEL" ]]; then
-  log "Using model: $MODEL"
-else
-  MODEL="gpt-5-nano"
-  log "No model specified; using temporary default model: $MODEL"
-fi
-
-# Prepare optional MCP settings if any secret present
-mkdir -p "$HOME/.qwen"
-SETTINGS_PATH="$HOME/.qwen/settings.json"
-generate_settings=false
-[[ -n "$INPUT_JIRA_HOST" && -n "$INPUT_JIRA_EMAIL" && -n "$INPUT_JIRA_API_TOKEN" ]] && generate_settings=true
-[[ -n "$INPUT_CLICKUP_TOKEN" ]] && generate_settings=true
-
-if $generate_settings; then
-  log "Generating ~/.qwen/settings.json for MCP integrations (optional)..."
-  # Build JSON dynamically to include only provided blocks
-  {
-    echo '{'
-    echo '  "mcpServers": {'
-    local first=true
-    if [[ -n "$INPUT_JIRA_HOST" && -n "$INPUT_JIRA_EMAIL" && -n "$INPUT_JIRA_API_TOKEN" ]]; then
-      if ! $first; then echo ","; fi
-      first=false
-      cat <<JSON
-    "jira": {
-      "command": "jira-mcp-server",
-      "env": {
-        "ATLASSIAN_HOST": "$INPUT_JIRA_HOST",
-        "ATLASSIAN_EMAIL": "$INPUT_JIRA_EMAIL",
-        "ATLASSIAN_TOKEN": "$INPUT_JIRA_API_TOKEN"
-      }
-    }
-JSON
-    fi
-    if [[ -n "$INPUT_CLICKUP_TOKEN" ]]; then
-      if ! $first; then echo ","; fi
-      first=false
-      cat <<JSON
-    "clickup": {
-      "command": "clickup-mcp-server",
-      "env": {
-        "CLICKUP_TOKEN": "$INPUT_CLICKUP_TOKEN"
-      }
-    }
-JSON
-    fi
-    echo '  }'
-    echo '}'
-  } > "$SETTINGS_PATH"
-else
-  # No MCP configured; ensure prior settings do not cause confusion
-  if [[ -f "$SETTINGS_PATH" ]]; then rm -f "$SETTINGS_PATH"; fi
-fi
+## Note: model selection and MCP config removed for Codex CLI path
 
 # Determine changed files range using GitHub API via gh
 EVENT_NAME=${GITHUB_EVENT_NAME:-push}
@@ -210,17 +155,12 @@ openai_generate() {
   fi
 }
 
-log "Running Smart Doc with OpenAI (Responses API)..."
-if ! openai_generate "$PROMPT_FILE"; then
-  warn "OpenAI generation failed; no changes will be made."
+log "Running Smart Doc with OpenAI Codex CLI..."
+if ! code exec "$(cat "$PROMPT_FILE")"; then
+  warn "Codex CLI execution failed; no changes will be made."
 fi
 
-# Optionally create HISTORY.md only if generation produced content
-if [[ "${INPUT_GENERATE_HISTORY,,}" == "true" && $DID_GENERATE -eq 1 ]]; then
-  if [[ ! -f "HISTORY.md" ]]; then
-    echo -e "# HISTORY\n" > HISTORY.md
-  fi
-fi
+# Do not auto-create HISTORY.md; rely on tool output
 
 # Stage, commit, push only on push events
 if [[ "$EVENT_NAME" == "pull_request" ]]; then
