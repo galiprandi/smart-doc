@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# /**
+#  * Smart Doc — Validator
+#  * Responsibility:
+#  *   - Perform early validation of environment, secrets, and basic tooling.
+#  *   - Fail fast only on critical requirements (API key). Soft-skip on optional pieces when appropriate.
+#  * Invariants (keep in future iterations):
+#  *   - Do not write or mutate repository files.
+#  *   - Keep logs concise with emojis.
+#  * Inputs: SMART_DOC_API_TOKEN or OPENAI_API_KEY, INPUT_PROMPT_TEMPLATE, INPUT_DOCS_FOLDER.
+#  */
+set -euo pipefail
+
+log() { echo "🧪 [validator] $*"; }
+warn() { echo "::warning::⚠️ $*"; }
+err() { echo "::error::❌ $*"; }
+
+INPUT_DOCS_FOLDER=${INPUT_DOCS_FOLDER:-docs}
+INPUT_PROMPT_TEMPLATE=${INPUT_PROMPT_TEMPLATE:-}
+
+# Auth mapping consistency check mirroring entrypoint behavior
+if [[ -n "${OPENAI_API_KEY:-}" && -n "${INPUT_SMART_DOC_API_TOKEN:-}" && "${OPENAI_API_KEY}" != "${INPUT_SMART_DOC_API_TOKEN}" ]]; then
+  err "Both OPENAI_API_KEY and SMART_DOC_API_TOKEN are defined with different values. Define ONLY SMART_DOC_API_TOKEN."
+  exit 1
+fi
+
+if [[ -n "${INPUT_SMART_DOC_API_TOKEN:-}" ]]; then
+  export OPENAI_API_KEY="${INPUT_SMART_DOC_API_TOKEN}"
+fi
+
+if [[ -z "${OPENAI_API_KEY:-}" ]]; then
+  err "SMART_DOC_API_TOKEN is required (mapped to OPENAI_API_KEY)."
+  exit 1
+fi
+log "API key present."
+
+# Tooling
+need_cmd() { command -v "$1" >/dev/null 2>&1 || { warn "Missing optional dependency: $1"; return 1; }; }
+need_cmd git >/dev/null 2>&1 || true
+need_cmd jq >/dev/null 2>&1 || true
+need_cmd curl >/dev/null 2>&1 || true
+need_cmd gh >/dev/null 2>&1 || true
+
+# Template
+if [[ -n "$INPUT_PROMPT_TEMPLATE" && ! -f "$INPUT_PROMPT_TEMPLATE" ]]; then
+  warn "INPUT_PROMPT_TEMPLATE not found: $INPUT_PROMPT_TEMPLATE"
+fi
+
+# Docs folder (ensure exists later by entrypoint; here we just log)
+log "Docs folder target: $INPUT_DOCS_FOLDER"
+
+exit 0
