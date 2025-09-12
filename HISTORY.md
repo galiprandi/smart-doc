@@ -17,3 +17,8 @@
 - Date: 2025-09-12
 - Scope: prompts, docs
 - TL;DR: Documented strict HISTORY.md entry format and spacing; updated docs to reflect requirements.
+
+## Chore: Trigger Smart Doc PR flow test
+- Date: 2025-09-12
+- Scope: README
+- TL;DR: Added a no-op HTML comment to README to exercise PR flow; no functional changes.
