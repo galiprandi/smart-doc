@@ -1,33 +1,33 @@
-[![Smart Doc](https://github.com/galiprandi/smart-doc/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/galiprandi/smart-doc/actions/workflows/test.yml)
+[![Smart Doc](https://github.com/galiprandi/smart-doc/actions/workflows/smart-doc.yml/badge.svg?branch=main)](https://github.com/galiprandi/smart-doc/actions/workflows/smart-doc.yml)
 
 # Smart Doc — Living documentation for your repository
 
-Smart Doc keeps your documentation fresh automatically on every integration (main, develop, release, or PRs) — you choose the trigger.
+Smart Doc turns each merge into clear, change‑only documentation under `docs/` and opens a pull request for you. Protected branches stay protected; your docs stay fresh.
 
 Benefits
-- Change‑driven updates: turns each commit diff into clear, useful docs under `docs/` (and optionally `SMART_TIMELINE.md`).
-- Architecture and modules, minus the friction: generates concise summaries, Mermaid diagrams, and per‑module pages when relevant.
-- Zero manual effort: runs as a GitHub Action on every push or PR; pushes commits on `main`, never on PRs.
-- Flexible by design: works with any stack. Built for OpenAI (Codex/GPT‑5) and easy to adapt for Qwen/Qwen‑Code.
+- Change‑driven updates from your diff, not wholesale rewrites.
+- Auto‑PR to your target branch (ideal para protected branches).
+- Works with any stack. Built for OpenAI; adaptable a otros proveedores.
 
 Why Smart Doc
-- Reduce documentation debt: stop chasing stale READMEs and diagrams.
-- Faster onboarding: newcomers grasp “what changed” in minutes.
-- Stay focused: only touches docs related to the change, not the whole site.
-- Scales with you: from single repos to large monorepos.
+- Reduce documentation debt and stale READMEs/diagrams.
+- Faster onboarding: “what changed” en minutos.
+- Solo toca lo relevante al cambio; escala a monorepos.
 
 How it works (at a glance)
-- On your chosen trigger (e.g., merges to `main` or `develop`, or PRs), Smart Doc:
-  - Detects changed files and unified diffs.
-  - Updates or creates pages in `docs/` with explanations and diagrams (English, change‑only).
-  - Opens an auto‑merge Pull Request to `main` with the generated docs — perfect for protected branches.
-- On pull requests, you get a safe preview without pushing commits.
+- Detect diffs for the current run.
+- Generate concise docs under `docs/` (English, change‑only) y opcional `SMART_TIMELINE.md`.
+- Crear/actualizar una rama `smart-doc/docs-update-<sha>` y abrir un PR. Puede encolar auto‑merge o fusionar cuando sea seguro.
 
-Minimal setup
-- One secret: `SMART_DOC_API_TOKEN` (your API key; exported as `OPENAI_API_KEY`).
-- A simple workflow pointing to this Action.
+Requirements
+- A GitHub repository con GitHub Actions habilitado.
+- Un secreto: `SMART_DOC_API_TOKEN` (exportado como `OPENAI_API_KEY`).
+- Permisos del job para PRs con `gh`:
+  - `permissions.contents: write`
+  - `permissions.pull-requests: write`
+- Opcional: `GH_TOKEN` (PAT) si tu política limita `GITHUB_TOKEN`.
 
-Minimal workflow example (main and PRs)
+Quick start (minimal example)
 ```yaml
 name: Smart Doc
 on:
@@ -45,12 +45,10 @@ concurrency:
 
 jobs:
   update-docs:
-    if: >
-      ${{ github.event_name != 'push' || (
-            !startsWith(github.ref_name, 'smart-doc/docs-update-') &&
-            github.actor != 'github-actions[bot]'
-          ) }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -58,150 +56,24 @@ jobs:
 
       - name: Smart Doc
         uses: galiprandi/smart-doc@v1
-        # Optionally provide a PAT for gh via secrets (if not relying on GITHUB_TOKEN)
-        # env:
-        #   GH_TOKEN: ${{ secrets.GH_PAT }}
         with:
           smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
           branch: main
           docs_folder: docs
           generate_history: 'true'
-          # Optional: custom prompt
-          # prompt_template: prompts/default.md
 ```
 
-Tokens and Secrets (required for PRs with `gh`)
-- Smart Doc opens a PR from `smart-doc/docs-update-<sha>` using GitHub CLI (`gh`). The CLI needs an authentication token.
-- Recommended in GitHub Actions:
-  - Use the built‑in `GITHUB_TOKEN` and grant job permissions:
-    - `permissions.contents: write`
-    - `permissions.pull-requests: write`
-    This is sufficient for most repos; no extra secrets needed.
-  - Alternatively, create a Personal Access Token (classic) with minimal scopes (e.g., `repo`) and store it as a Repository Secret (e.g., `GH_PAT`). Then expose it as `GH_TOKEN` for `gh`:
-    ```yaml
-    env:
-      GH_TOKEN: ${{ secrets.GH_PAT }}
-    ```
-- The model/token for generation is separate and already provided via `SMART_DOC_API_TOKEN` (exported as `OPENAI_API_KEY`). Keep using the existing secret for it.
-- Troubleshooting: if `gh pr create` fails, confirm job permissions, that a token is available to `gh` (either `GITHUB_TOKEN` or `GH_TOKEN` from secrets), and that `gh auth status` succeeds in logs.
-- Smart Doc never pushes directly to protected branches; it always creates a PR.
+More recipes and alternatives
+- Triggers (GitFlow, release/*, PR‑only), monorepo `paths`, PAT vs `GITHUB_TOKEN`, merge modes y troubleshooting están en [`USAGE.md`](./USAGE.md).
 
 Model compatibility
-- OpenAI (Codex/GPT‑5): first‑class support.
-- Qwen / Qwen‑Code: easily adaptable by configuring your model provider.
+- OpenAI (Codex/GPT‑5): first‑class.
+- Qwen / Qwen‑Code: configurable.
 
-FAQ
-- Does it overwrite everything? No. It only updates documentation tied to the current commit’s diff.
-- Does it generate diagrams? Yes, Mermaid diagrams that stay consistent with the changes.
-- Does it run on PRs? Yes, without pushing commits; on `main` it commits changes automatically.
+FAQ (short)
+- Overwrites everything? No. Solo lo relacionado al diff actual.
+- Diagramas? Sí, Mermaid cuando aporta valor.
+- ¿Corre en PRs? Sí; sin pushes. En `main` abre PR y puede auto‑mergear.
 
 License
 MIT
-
-<!-- chore: trigger Smart Doc PR flow test -->
-
-Customize triggers (GitFlow, release branches, PR-only)
-```yaml
-on:
-  push:
-    branches:
-      - develop         # GitFlow
-      - release/*       # release branches
-      - main            # trunk/main
-    paths-ignore:
-      - 'docs/**'
-      - 'SMART_TIMELINE.md'
-  pull_request:
-    branches: [ main, develop ]
-
-concurrency:
-  group: smart-doc-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-```
-
-PR-only workflow example (no pushes, safe previews)
-```yaml
-name: Smart Doc (PR only)
-on:
-  pull_request:
-    branches: [ main, develop ]
-
-concurrency:
-  group: smart-doc-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:
-  update-docs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Smart Doc
-        uses: galiprandi/smart-doc@v1
-        with:
-          smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
-          branch: main
-          docs_folder: docs
-          generate_history: 'true'
-          # Optional: custom prompt
-          # prompt_template: prompts/default.md
-```
-
-Quick recipes
-
-| Scenario | on.push | on.pull_request | Notes |
-| --- | --- | --- | --- |
-| Trunk-based (main only) | `branches: [ main ]` + `paths-ignore` for docs | `branches: [ main ]` | Most common. Auto‑merge PR targets `main`. |
-| GitFlow (develop + main) | `branches: [ develop, main ]` + `paths-ignore` | `branches: [ develop, main ]` | Document on both develop and main. |
-| Release branches | `branches: [ release/*, main ]` + `paths-ignore` | `branches: [ main ]` | Keep release docs in sync pre‑merge. |
-| PR‑only previews | – | `branches: [ main, develop ]` | Never pushes. Safe previews in PRs. |
-| Monorepo selective | Use `paths:` filters per app/package | Same | Run only when certain folders change. |
-
-Tip: keep `concurrency.cancel-in-progress: true` and the anti‑loop job condition to avoid cycles when Smart Doc opens a docs PR.
-
-Monorepo selective (paths filters) — example
-```yaml
-name: Smart Doc (frontend only)
-on:
-  push:
-    branches: [ main ]
-    paths:
-      - apps/frontend/**
-      - packages/ui/**
-    paths-ignore:
-      - 'docs/**'
-      - 'HISTORY.md'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - apps/frontend/**
-      - packages/ui/**
-
-concurrency:
-  group: smart-doc-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:
-  update-docs:
-    if: >
-      ${{ github.event_name != 'push' || (
-            !startsWith(github.ref_name, 'smart-doc/docs-update-') &&
-            github.actor != 'github-actions[bot]'
-          ) }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Smart Doc
-        uses: galiprandi/smart-doc@v1
-        with:
-          smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
-          branch: main
-          docs_folder: docs
-          generate_history: 'true'
-```
-
-force push
