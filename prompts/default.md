@@ -42,3 +42,16 @@ flowchart LR
   ServiceA --> DB[(Database)]
   ServiceB --> Queue[(Queue)]
 ```
+
+Registro de cambios (HISTORY.md):
+- Cuando generes o actualices documentación, añade una entrada al archivo raíz `HISTORY.md` en formato append-only.
+- Incluye la actualización de `HISTORY.md` dentro del mismo patch.
+- Formato exacto (mantén las etiquetas tal cual):
+
+## [Título del cambio]
+- Date: YYYY-MM-DD
+- Author: [Nombre si disponible]
+- Scope: [Áreas o módulos afectados]
+- TL;DR: [Resumen de una frase]
+- Jira: [link] (Status: [status], Assignee: [name])  [si aplica]
+- Clickup: [link] (Status: [status], Assignee: [name])  [si aplica]
