@@ -1,10 +1,13 @@
 # Smart Doc — Documentation
 
-This folder hosts Smart Doc’s internal documentation. This commit introduces `AGENTS.md` at the repository root with clear guidance for AI agents (and humans) contributing to this project.
+This folder hosts Smart Doc’s internal documentation. See `AGENTS.md` at the repository root for guardrails and contributor guidelines.
 
-- Agent contributors: see `AGENTS.md` for guardrails, scope, and editing guidelines.
+- Agent contributors: see `AGENTS.md` for scope and editing rules.
 - Docs scope: change‑driven, English‑only, minimal churn.
 - Output location: generated pages live under `docs/`.
 
-TODO: Expand module and architecture docs as code changes introduce or modify components.
+## Workflows
+- Push + PR (default): updates docs on pushes to `main` (with anti‑loop and `paths-ignore`) and previews on PRs.
+- PR‑only previews: supported for repos that only want safe previews on pull requests. See `README.md` for the “PR-only workflow example (no pushes, safe previews)`, including `concurrency` and `actions/checkout@v4` with `fetch-depth: 0`.
 
+TODO: Expand module and architecture docs as code changes introduce or modify components.
