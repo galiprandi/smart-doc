@@ -32,7 +32,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run Smart Doc
-        uses: galiprandi/smart-doc@v1
+        uses: ./
         with:
           smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
           branch: main
