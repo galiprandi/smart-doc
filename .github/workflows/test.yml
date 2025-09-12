@@ -16,14 +16,25 @@ permissions:
 jobs:
   smart-doc:
     runs-on: ubuntu-latest
-    # Evita bucles si el commit fue generado por la propia action
-    if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, 'docs: update documentation via Smart Doc') }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Detect Smart Doc self-commit (push only)
+        if: ${{ github.event_name == 'push' }}
+        shell: bash
+        run: |
+          msg="$(git log -1 --pretty=%B)"
+          if [[ "$msg" == *"docs: update documentation via Smart Doc"* ]]; then
+            echo "SELF_COMMIT=true" >> "$GITHUB_ENV"
+            echo "Detected self-commit; will skip generation."
+          else
+            echo "SELF_COMMIT=false" >> "$GITHUB_ENV"
+          fi
+
       - name: Run Smart Doc
+        if: ${{ env.SELF_COMMIT != 'true' }}
         uses: ./
         with:
           smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
