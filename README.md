@@ -1,3 +1,5 @@
+[![Smart Doc](https://github.com/galiprandi/smart-doc/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/galiprandi/smart-doc/actions/workflows/test.yml)
+
 # Smart Doc — Auto-document your code with Qwen-Code
 
 Smart Doc is a simple composite GitHub Action that analyzes code changes and updates documentation under `docs/`, optionally enriching it with ticket context and generating `HISTORY.md` in the repo root.
