@@ -12,3 +12,8 @@
 - Date: 2025-09-12
 - Scope: docs (README, stack, architecture), action.yml
 - TL;DR: Updated documentation to reflect provider‑agnostic positioning (OpenAI first‑class, Qwen adaptable), clarified outputs (README, stack, architecture, modules), and aligned usage to `galiprandi/smart-doc@v1`.
+
+## Clarify HISTORY.md formatting rules
+- Date: 2025-09-12
+- Scope: prompts, docs
+- TL;DR: Documented strict HISTORY.md entry format and spacing; updated docs to reflect requirements.

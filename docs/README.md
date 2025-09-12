@@ -52,3 +52,16 @@ Folder Structure
 Notes
 - Provider compatibility: OpenAI (Codex/GPT‑5) is primary; Qwen/Qwen‑Code is adaptable. TODO: Document Qwen setup if adopted.
 - Approval behavior follows Codex CLI defaults since no explicit `--approval` is passed.
+
+Change Log Format (HISTORY.md)
+- Append‑only; never rewrite or reorder prior entries.
+- English only.
+- Exact entry format:
+  ## <Concise title>
+  - Date: YYYY-MM-DD
+  - Scope: <areas/modules>
+  - TL;DR: <one-sentence summary>
+- Spacing rules:
+  - Ensure a blank line before each new entry (add one first if file ends without newline).
+  - Leave a single blank line after each entry; separate entries with exactly one blank line.
+  - Do not add horizontal rules or extra headings. End the file with a single trailing newline.

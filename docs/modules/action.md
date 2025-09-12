@@ -25,6 +25,14 @@ Notes
 - Uses a composite (`using: composite`); no Docker needed.
 - Usage example aligns with `galiprandi/smart-doc@v1` as per README.
 - No breaking input changes in this commit; description updated to reflect provider‑agnostic positioning.
+ - When `generate_history` is enabled, entries must follow strict formatting:
+   - English only; append‑only; no reordering.
+   - Format per entry:
+     ## <Concise title>
+     - Date: YYYY-MM-DD
+     - Scope: <areas/modules>
+     - TL;DR: <one-sentence summary>
+   - Spacing: blank line before each new entry (ensure trailing newline first), exactly one blank line between entries, no horizontal rules, end file with a single trailing newline.
 
 TODO
 - Document a Qwen/Qwen‑Code configuration path if adopted.
