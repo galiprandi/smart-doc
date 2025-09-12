@@ -1,5 +1,6 @@
 # ✅ PLAN FINAL Y DEFINITIVO: SMART DOC CON QWEN-CODE (USANDO SMART_DOC_API_TOKEN)
 
+<!-- chore(ci): trigger Smart Doc run -->
 ## ✅ Checklist de Ejecución (previo a implementar)
 
 - [ ] Definir tipo de Action final: `composite` (bash) vs `node20` (JS) vs `docker`. El plan indica `node20` pero referencia `entrypoint.sh` (no válido para `node20`).
