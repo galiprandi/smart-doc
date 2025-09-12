@@ -177,14 +177,19 @@ log "Running Smart Doc with OpenAI Codex CLI..."
 run_codex() {
   local prompt
   prompt="$(cat "$PROMPT_FILE")"
+  # Request write-enabled sandbox for Codex CLI
+  export CODEX_SANDBOX="workspace-write"
+  export CODEX_APPROVAL="never"
+  export CODEX_REASONING_EFFORT="medium"
+  log "Invoking Codex with sandbox=$CODEX_SANDBOX, approval=$CODEX_APPROVAL"
   set +e
   if command -v code >/dev/null 2>&1; then
-    code exec "$prompt" && return 0
+    code exec --sandbox "$CODEX_SANDBOX" --approval "$CODEX_APPROVAL" "$prompt" && return 0
   fi
   if command -v codex >/dev/null 2>&1; then
-    codex exec "$prompt" && return 0
+    codex exec --sandbox "$CODEX_SANDBOX" --approval "$CODEX_APPROVAL" "$prompt" && return 0
   fi
-  npx -y @openai/codex exec "$prompt" && return 0
+  npx -y @openai/codex exec --sandbox "$CODEX_SANDBOX" --approval "$CODEX_APPROVAL" "$prompt" && return 0
   set -e
   return 1
 }
