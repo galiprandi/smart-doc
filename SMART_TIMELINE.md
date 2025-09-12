@@ -37,3 +37,11 @@
 - Tickets: 
 - Scope: README.md, USAGE.md, docs/
 - TL;DR: README updated, USAGE.md added, and internal docs regenerated to reflect permissions and merge options.
+
+## Docs: update via Smart Doc (2c6b047)
+- Date: 2025-09-12
+- PR: #5
+- Commit: 2c6b047
+- Tickets: 
+- Scope: docs/README.md,docs/architecture/diagram.md docs/architecture/overview.md,docs/modules/entrypoint.md docs/stack.md
+- TL;DR: Update documentation based on this commit's diff (change-only, English).
