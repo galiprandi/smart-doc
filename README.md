@@ -2,10 +2,14 @@
 
 # Smart Doc — Living documentation for your repository
 
-Smart Doc turns each merge into clear, change‑only documentation under `docs/` and opens a pull request for you. Protected branches stay protected; your docs stay fresh.
+Bold, automated, and safe: the GitHub Action that auto‑documents your repo from diffs — incrementally, stack‑aware, and PR‑first.
+
+Smart Doc converts each merge into precise, change‑only docs under `docs/`, creates or updates architecture and module pages when relevant, and opens a pull request for you. Protected branches stay protected; your docs stay fresh.
 
 Benefits
-- Change‑driven updates from your diff, not wholesale rewrites.
+- Auto‑documentation from diffs: change‑only updates under `docs/` (no wholesale rewrites).
+- Project‑type aware: suggests and maintains an ideal docs structure (backend, frontend, library, monorepo, infra) and diagrams when they add value.
+- Opportunistic verification: cross‑checks against your codebase (scripts, endpoints, env vars) to fix obvious inconsistencies.
 - Auto‑PR to your target branch (ideal para protected branches).
 - Works with any stack. Built for OpenAI; adaptable a otros proveedores.
 

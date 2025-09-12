@@ -58,6 +58,11 @@ Output behavior
 - Write/update files directly under `docs/` (and `SMART_TIMELINE.md` if appropriate). Do not print extra console output.
 - Keep documents in English and align terminology with what appears in the diff.
 
+Change gating (avoid unnecessary PRs/commits)
+- Only update docs when the improvement is meaningful (clarifies behavior, fixes inaccuracies, documents new/changed components, or adds missing high-signal context).
+- Skip micro-edits and cosmetic changes that do not materially improve understanding. Prefer batching minor nits in future runs.
+- If nothing meets the bar, do not write any files and exit without creating a PR.
+
 Opportunistic improvement policy (when touching an existing doc file)
 - Review the entire file quickly to catch obvious inconsistencies (module names, routes, commands).
 - Validate against the codebase where cheap and reliable:
