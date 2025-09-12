@@ -129,3 +129,15 @@ jobs:
           # Optional: custom prompt
           # prompt_template: prompts/default.md
 ```
+
+Quick recipes
+
+| Scenario | on.push | on.pull_request | Notes |
+| --- | --- | --- | --- |
+| Trunk-based (main only) | `branches: [ main ]` + `paths-ignore` for docs | `branches: [ main ]` | Most common. Auto‑merge PR targets `main`. |
+| GitFlow (develop + main) | `branches: [ develop, main ]` + `paths-ignore` | `branches: [ develop, main ]` | Document on both develop and main. |
+| Release branches | `branches: [ release/*, main ]` + `paths-ignore` | `branches: [ main ]` | Keep release docs in sync pre‑merge. |
+| PR‑only previews | – | `branches: [ main, develop ]` | Never pushes. Safe previews in PRs. |
+| Monorepo selective | Use `paths:` filters per app/package | Same | Run only when certain folders change. |
+
+Tip: keep `concurrency.cancel-in-progress: true` and the anti‑loop job condition to avoid cycles when Smart Doc opens a docs PR.
