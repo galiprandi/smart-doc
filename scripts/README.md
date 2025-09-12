@@ -35,6 +35,36 @@ bash scripts/run-smart-doc-local.sh \
   --history false
 ```
 
+## Diff injection (test mode)
+Inject a unified diff to iterate the prompt without touching the repo state.
+
+- Using the local runner directly:
+  ```bash
+  bash scripts/run-smart-doc-local.sh --patch scripts/fixtures/test.patch
+  ```
+- Include uncommitted changes in addition to the patch:
+  ```bash
+  bash scripts/run-smart-doc-local.sh --patch scripts/fixtures/test.patch --include-working
+  ```
+
+You can also generate a patch from your working tree:
+```bash
+git diff -U3 main...HEAD > /tmp/test.patch
+bash scripts/run-smart-doc-local.sh --patch /tmp/test.patch
+```
+
+## Test runner helper
+`test-smart-doc.sh` is a thin wrapper around the local runner with sensible defaults.
+
+Examples:
+```bash
+# Use the bundled repo-related fixture
+bash scripts/test-smart-doc.sh --patch scripts/fixtures/test.patch
+
+# Include working tree changes and choose a different base
+bash scripts/test-smart-doc.sh --patch /tmp/test.patch --include-working --base develop
+```
+
 What to expect:
 - The script simulates a PR event, so `entrypoint.sh` will not push or open PRs.
 - Generated content is written under `docs/` (and `SMART_TIMELINE.md` only if produced), allowing you to iterate on the prompt safely.

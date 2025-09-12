@@ -63,6 +63,12 @@ Consumption (for external users)
 - Recommended reference: `uses: galiprandi/smart-doc@v1` (stable tag created and released).
 - Example workflows in README include permissions and anti‑loop guards.
 
+Prompt tuning tips (local)
+- Use diff injection to iterate the prompt without changing repo state:
+  - `bash scripts/run-smart-doc-local.sh --patch scripts/fixtures/test.patch`
+  - Include working tree changes if needed: `--include-working`
+- See `scripts/README.md` → “Diff injection (test mode)” for more examples.
+
 Testing/Validation
 - No unit tests. Validate by pushing a small change and confirming:
   - A branch `smart-doc/docs-update-<sha>` is created

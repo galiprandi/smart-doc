@@ -4,10 +4,10 @@
 Smart Doc generates concise, change-driven documentation from each commit’s diff. It writes only under `docs/` and can optionally append entries to `SMART_TIMELINE.md`. The Action is PR-first and respects protected branches.
 
 ## What’s new in this update
-- Added a change gating policy in the prompt to avoid unnecessary PRs/commits (meaningful improvements only; skip micro-edits).
-- Prompt template expanded to include project-type–aware scaffolding and an opportunistic improvement policy when touching existing pages.
-- Smart Timeline format updated to keyed fields (`Title`, `Merge`, `Scope`, `TL;DR`) with strict spacing rules.
-- This page was reintroduced after a prior removal to keep minimal, up-to-date docs.
+This commit refines internal scripts and adds small, documented hints:
+
+- `scripts/diff-detector.sh`: ensures `tmp/changed_files.txt` and `tmp/patch.diff` are initialized and adds a TODO for a future `INPUT_MAX_FILES` threshold (non-blocking).
+- `scripts/doc-updater.sh`: clarifies model selection via `INPUT_MODEL` (default `gpt-5-nano`) and notes a future `--dry-run` flag at the LLM level.
 
 ## Quickstart
 - See the top-level [README](../README.md) for setup, inputs, and workflow examples.
@@ -25,4 +25,7 @@ Follow the Semantic Markdown requirements defined in [prompts/default.md](../pro
 ## Current docs
 - `docs/README.md` — this page.
 - `SMART_TIMELINE.md` — append-only change list at the repo root.
-- TODO: Reintroduce architecture and stack docs when future diffs touch those areas.
+- `docs/modules/diff-detector.md` — module notes for `scripts/diff-detector.sh`.
+- `docs/modules/doc-updater.md` — module notes for `scripts/doc-updater.sh`.
+
+TODO: Reintroduce broader architecture and stack docs when future diffs touch those areas.

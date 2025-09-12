@@ -20,7 +20,7 @@
 # - Uses the repo's prompts/default.md by default so you can iterate on it
 #
 # Usage:
-#   scripts/run-smart-doc-local.sh [--base <branch>] [--docs <folder>] [--prompt <path>] [--history true|false]
+#   scripts/run-smart-doc-local.sh [--base <branch>] [--docs <folder>] [--prompt <path>] [--history true|false] [--include-working] [--patch <file>]
 # Examples:
 #   scripts/run-smart-doc-local.sh
 #   scripts/run-smart-doc-local.sh --base develop --prompt prompts/default.md --history false
@@ -38,12 +38,15 @@ BASE_REF="main"
 DOCS_FOLDER="docs"
 PROMPT_TEMPLATE="prompts/default.md"
 GENERATE_HISTORY="true"
+PATCH_FILE=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --base) BASE_REF="${2:-main}"; shift 2;;
     --docs) DOCS_FOLDER="${2:-docs}"; shift 2;;
     --prompt) PROMPT_TEMPLATE="${2:-prompts/default.md}"; shift 2;;
     --history) GENERATE_HISTORY="${2:-true}"; shift 2;;
+    --include-working) INCLUDE_WORKING="true"; shift 1;;
+    --patch) PATCH_FILE="${2:-}"; shift 2;;
     *) err "Unknown arg: $1"; exit 2;;
   esac
 done
@@ -102,6 +105,10 @@ export INPUT_PROMPT_TEMPLATE="$PROMPT_TEMPLATE"
 export INPUT_MODEL="${INPUT_MODEL:-gpt-5-nano}"
 export INPUT_GENERATE_HISTORY="$GENERATE_HISTORY"
 export INPUT_SMART_DOC_API_TOKEN="$SMART_DOC_API_TOKEN"
+export INPUT_INCLUDE_WORKING="${INCLUDE_WORKING:-false}"
+if [[ -n "$PATCH_FILE" ]]; then
+  export INPUT_PATCH_FILE="$PATCH_FILE"
+fi
 export INPUT_JIRA_HOST="${INPUT_JIRA_HOST:-}"
 export INPUT_JIRA_EMAIL="${INPUT_JIRA_EMAIL:-}"
 export INPUT_JIRA_API_TOKEN="${INPUT_JIRA_API_TOKEN:-}"
