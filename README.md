@@ -58,6 +58,9 @@ jobs:
 
       - name: Smart Doc
         uses: galiprandi/smart-doc@v1
+        # Optionally provide a PAT for gh via secrets (if not relying on GITHUB_TOKEN)
+        # env:
+        #   GH_TOKEN: ${{ secrets.GH_PAT }}
         with:
           smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
           branch: main

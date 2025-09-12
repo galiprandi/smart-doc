@@ -233,19 +233,28 @@ if ! git push -u origin "$UPDATE_BRANCH"; then
   exit 0
 fi
 
-# Create or reuse PR
+# Create or reuse PR (ensure gh auth and explicit repo)
+export GH_TOKEN="${GH_TOKEN:-${GITHUB_TOKEN:-}}"
+REPO_SLUG="${GITHUB_REPOSITORY:-}"
+if [[ -z "$REPO_SLUG" ]]; then
+  REPO_SLUG=$(git config --get remote.origin.url | sed -E 's#.*github.com[:/](.+)\.git#\1#')
+fi
+
+# Bootstrap gh auth if needed (non-fatal)
+gh auth status >/dev/null 2>&1 || { printf "%s" "$GH_TOKEN" | gh auth login --with-token >/dev/null 2>&1 || true; }
+
 PR_URL=""
-if PR_URL=$(gh pr create --base "$TARGET_BRANCH" --head "$UPDATE_BRANCH" \
+if PR_URL=$(gh pr create --repo "$REPO_SLUG" --base "$TARGET_BRANCH" --head "$UPDATE_BRANCH" \
   --title "docs: update via Smart Doc ($SHORT_SHA)" \
   --body "Auto-generated documentation updates for commit $GITHUB_SHA" 2>/dev/null); then
   log "Opened PR: $PR_URL"
 else
   warn "PR creation failed; attempting to find existing PR for $UPDATE_BRANCH"
-  PR_URL=$(gh pr list --head "$UPDATE_BRANCH" --json url --jq '.[0].url' 2>/dev/null || true)
+  PR_URL=$(gh pr list --repo "$REPO_SLUG" --head "$UPDATE_BRANCH" --json url --jq '.[0].url' 2>/dev/null || true)
   if [[ -n "$PR_URL" ]]; then
     log "Found existing PR: $PR_URL"
   else
-    warn "No PR found for $UPDATE_BRANCH."
+    warn "No PR found for $UPDATE_BRANCH. Please ensure GITHUB_TOKEN permissions or provide GH_TOKEN secret."
   fi
 fi
 
@@ -304,7 +313,7 @@ fi
 
 # Try to enable auto-merge (squash); ignore if not permitted
 if [[ -n "$PR_URL" ]]; then
-  gh pr merge --auto --squash "$PR_URL" >/dev/null 2>&1 || warn "Auto-merge not enabled or failed."
+  gh pr merge --repo "$REPO_SLUG" --auto --squash "$PR_URL" >/dev/null 2>&1 || warn "Auto-merge not enabled or failed."
 fi
 
 log "Smart Doc completed (branch: $UPDATE_BRANCH${PR_URL:+, PR: $PR_URL})."
