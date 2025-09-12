@@ -1,37 +1,30 @@
 [![Smart Doc](https://github.com/galiprandi/smart-doc/actions/workflows/smart-doc.yml/badge.svg?branch=main)](https://github.com/galiprandi/smart-doc/actions/workflows/smart-doc.yml)
 
-# Smart Doc — Living documentation for your repository
+# Smart Doc — Living, change‑driven docs from your diffs
 
-Bold, automated, and safe: the GitHub Action that auto‑documents your repo from diffs — incrementally, stack‑aware, and PR‑first.
+Smart Doc is a GitHub Action that turns each merge into precise, change‑only documentation under `docs/`. It’s stack‑aware, PR‑first, and designed to keep protected branches protected while your docs stay fresh.
 
-Smart Doc converts each merge into precise, change‑only docs under `docs/`, creates or updates architecture and module pages when relevant, and opens a pull request for you. Protected branches stay protected; your docs stay fresh.
+## Why teams use Smart Doc
+- Change‑only updates: no wholesale rewrites; minimal churn.
+- Stack‑aware scaffolding: backend, frontend, library, monorepo, infra — and Mermaid diagrams when useful.
+- Code‑aware checks: cross‑references scripts, endpoints, env vars to fix obvious inconsistencies.
+- PR‑first: opens a `smart-doc/docs-update-<sha>` branch and PR; compatible with protected branches and auto‑merge.
+- Works with any stack. First‑class OpenAI support; adaptable to others.
 
-Benefits
-- Auto‑documentation from diffs: change‑only updates under `docs/` (no wholesale rewrites).
-- Project‑type aware: suggests and maintains an ideal docs structure (backend, frontend, library, monorepo, infra) and diagrams when they add value.
-- Opportunistic verification: cross‑checks against your codebase (scripts, endpoints, env vars) to fix obvious inconsistencies.
-- Auto‑PR to your target branch (ideal para protected branches).
-- Works with any stack. Built for OpenAI; adaptable a otros proveedores.
+## How it works (at a glance)
+1) Detect the diff for the current run.
+2) Build a focused prompt and generate concise docs under `docs/` (English only). Optionally append to `SMART_TIMELINE.md`.
+3) Create/update `smart-doc/docs-update-<sha>` and open a PR; optionally auto‑merge when safe.
 
-Why Smart Doc
-- Reduce documentation debt and stale READMEs/diagrams.
-- Faster onboarding: “what changed” en minutos.
-- Solo toca lo relevante al cambio; escala a monorepos.
-
-How it works (at a glance)
-- Detect diffs for the current run.
-- Generate concise docs under `docs/` (English, change‑only) y opcional `SMART_TIMELINE.md`.
-- Crear/actualizar una rama `smart-doc/docs-update-<sha>` y abrir un PR. Puede encolar auto‑merge o fusionar cuando sea seguro.
-
-Requirements
-- A GitHub repository con GitHub Actions habilitado.
-- Un secreto: `SMART_DOC_API_TOKEN` (exportado como `OPENAI_API_KEY`).
-- Permisos del job para PRs con `gh`:
+## Requirements
+- GitHub Actions enabled on your repository.
+- Secret: `SMART_DOC_API_TOKEN` (exported as `OPENAI_API_KEY`).
+- Job permissions for PRs:
   - `permissions.contents: write`
   - `permissions.pull-requests: write`
-- Opcional: `GH_TOKEN` (PAT) si tu política limita `GITHUB_TOKEN`.
+- Optional: `GH_TOKEN` (PAT) if your org restricts `GITHUB_TOKEN`.
 
-Quick start (minimal example)
+## Quick start (minimal workflow)
 ```yaml
 name: Smart Doc
 on:
@@ -67,17 +60,24 @@ jobs:
           generate_history: 'true'
 ```
 
-More recipes and alternatives
-- Triggers (GitFlow, release/*, PR‑only), monorepo `paths`, PAT vs `GITHUB_TOKEN`, merge modes y troubleshooting están en [`USAGE.md`](./USAGE.md).
+## More recipes and advanced options
+See [`USAGE.md`](./USAGE.md) for:
+- Triggers (GitFlow, release/*, PR‑only)
+- Monorepo `paths` and selective updates
+- PAT vs `GITHUB_TOKEN`, merge modes, and troubleshooting
 
-Model compatibility
-- OpenAI (Codex/GPT‑5): first‑class.
-- Qwen / Qwen‑Code: configurable.
+## Model compatibility
+- OpenAI (Codex / GPT‑5): first‑class
+- Qwen / Qwen‑Code: configurable
 
-FAQ (short)
-- Overwrites everything? No. Solo lo relacionado al diff actual.
-- Diagramas? Sí, Mermaid cuando aporta valor.
-- ¿Corre en PRs? Sí; sin pushes. En `main` abre PR y puede auto‑mergear.
+## FAQ (short)
+- Does it overwrite everything? No — only what’s relevant to the current diff.
+- Mermaid diagrams? Yes, when they add value.
+- Runs on PRs? Yes; preview‑only (no pushes). On `main`, opens a docs PR and can auto‑merge.
+- Local preview? Yes — see contributor docs below for a test runner and diff injection.
 
-License
+## Contributing / Extending
+This README is focused on users. If you want to contribute to Smart Doc or run local previews, see [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+
+## License
 MIT
