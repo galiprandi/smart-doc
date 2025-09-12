@@ -11,3 +11,11 @@ TL;DR: Added project-type scaffolding and timeline spec; restored minimal docs p
 - Tickets: 
 - Scope: docs/README.md
 - TL;DR: Update documentation based on this commit's diff (change-only, English).
+
+## Docs: update via Smart Doc (64ce5fb)
+- Date: 2025-09-12
+- PR: #8
+- Commit: 64ce5fb
+- Tickets: 
+- Scope: docs/README.md
+- TL;DR: Update documentation based on this commit's diff (change-only, English).
