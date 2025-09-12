@@ -249,6 +249,59 @@ else
   fi
 fi
 
+# Append SMART_TIMELINE.md entry in the PR branch and add a preview to PR body
+if [[ -n "$PR_URL" ]]; then
+  pr_number="$(printf "%s" "$PR_URL" | sed -E 's#.*/pull/([0-9]+).*#\1#')"
+  changed_docs=$(git diff --name-only HEAD~1 HEAD | grep '^docs/' || true)
+  if [[ -z "$changed_docs" ]]; then changed_docs="docs/"; fi
+  scope_line=$(printf "%s\n" "$changed_docs" | head -n 10 | paste -sd ", " -)
+  msg=$(git log -1 --pretty=%B)
+  pr_title="$(gh pr view "$PR_URL" --json title -q .title 2>/dev/null || true)"
+  tickets_raw=$(printf "%s\n%s\n" "$msg" "$pr_title" | tr ' ' '\n' | rg -No '([A-Z][A-Z0-9]+-[0-9]+)' | sort -u | paste -sd ' ' - || true)
+  jira_enrich_ticket() {
+    local key="$1"
+    if [[ -z "$INPUT_JIRA_HOST" || -z "$INPUT_JIRA_EMAIL" || -z "$INPUT_JIRA_API_TOKEN" ]]; then
+      printf "%s" "$key"; return 0
+    fi
+    local json
+    json=$(curl -sS -u "$INPUT_JIRA_EMAIL:$INPUT_JIRA_API_TOKEN" "$INPUT_JIRA_HOST/rest/api/3/issue/$key?fields=summary,status" || true)
+    local title status
+    title=$(printf "%s" "$json" | jq -r '.fields.summary // empty')
+    status=$(printf "%s" "$json" | jq -r '.fields.status.name // empty')
+    if [[ -n "$title" || -n "$status" ]]; then
+      printf "%s" "$key"; [[ -n "$title" ]] && printf " — %s" "$title"; [[ -n "$status" ]] && printf " (Status: %s)" "$status"
+    else
+      printf "%s" "$key"
+    fi
+  }
+  if [[ -n "$tickets_raw" ]]; then
+    out_parts=()
+    for t in $tickets_raw; do out_parts+=("$(jira_enrich_ticket "$t")"); done
+    tickets_line=$(printf "%s\n" "${out_parts[@]}" | paste -sd ', ' -)
+  else
+    tickets_line=""
+  fi
+  today=$(date -u +%Y-%m-%d)
+  entry=$(cat <<EOF
+## Docs: update via Smart Doc ($SHORT_SHA)
+- Date: $today
+- PR: #${pr_number}
+- Commit: $SHORT_SHA
+- Tickets: ${tickets_line}
+- Scope: ${scope_line}
+- TL;DR: Update documentation based on this commit's diff (change-only, English).
+EOF
+)
+  { printf "\n"; printf "%s\n" "$entry"; } >> SMART_TIMELINE.md
+  git add SMART_TIMELINE.md
+  git commit -m "docs(timeline): append entry for PR #${pr_number} ($SHORT_SHA)" || true
+  git push origin "$UPDATE_BRANCH" || true
+  tmpf=$(mktemp)
+  current_body=$(gh pr view "$PR_URL" --json body -q .body 2>/dev/null || echo "")
+  { printf "%s\n\n---\n### Docs Timeline Entry (preview)\n\n" "$current_body"; printf "%s\n" "$entry"; } > "$tmpf"
+  gh pr edit "$PR_URL" --body-file "$tmpf" >/dev/null 2>&1 || true
+fi
+
 # Try to enable auto-merge (squash); ignore if not permitted
 if [[ -n "$PR_URL" ]]; then
   gh pr merge --auto --squash "$PR_URL" >/dev/null 2>&1 || warn "Auto-merge not enabled or failed."
