@@ -67,6 +67,22 @@ jobs:
           # prompt_template: prompts/default.md
 ```
 
+Tokens and Secrets (required for PRs with `gh`)
+- Smart Doc opens a PR from `smart-doc/docs-update-<sha>` using GitHub CLI (`gh`). The CLI needs an authentication token.
+- Recommended in GitHub Actions:
+  - Use the built‑in `GITHUB_TOKEN` and grant job permissions:
+    - `permissions.contents: write`
+    - `permissions.pull-requests: write`
+    This is sufficient for most repos; no extra secrets needed.
+  - Alternatively, create a Personal Access Token (classic) with minimal scopes (e.g., `repo`) and store it as a Repository Secret (e.g., `GH_PAT`). Then expose it as `GH_TOKEN` for `gh`:
+    ```yaml
+    env:
+      GH_TOKEN: ${{ secrets.GH_PAT }}
+    ```
+- The model/token for generation is separate and already provided via `SMART_DOC_API_TOKEN` (exported as `OPENAI_API_KEY`). Keep using the existing secret for it.
+- Troubleshooting: if `gh pr create` fails, confirm job permissions, that a token is available to `gh` (either `GITHUB_TOKEN` or `GH_TOKEN` from secrets), and that `gh auth status` succeeds in logs.
+- Smart Doc never pushes directly to protected branches; it always creates a PR.
+
 Model compatibility
 - OpenAI (Codex/GPT‑5): first‑class support.
 - Qwen / Qwen‑Code: easily adaptable by configuring your model provider.
