@@ -23,4 +23,14 @@ Output behavior
 - Keep documents in English and align terminology with what appears in the diff.
 
 Change log (optional)
-- If you add or update meaningful documentation, append an entry to `HISTORY.md` with: Title, Date (YYYY-MM-DD), Scope, and a one-sentence TL;DR.
+- File: `HISTORY.md` at the repo root. Append-only; never rewrite or reorder prior entries.
+- Language: English only.
+- Exact Markdown format per entry (no extra text):
+  ## <Concise title>
+  - Date: YYYY-MM-DD
+  - Scope: <areas/modules>
+  - TL;DR: <one-sentence summary>
+- Spacing requirements:
+  - Ensure a blank line before each new entry (if the file does not end with a newline, add one first).
+  - Leave a single blank line after each entry. Entries must be separated by exactly one blank line.
+- Do not add horizontal rules or additional headings. End the file with a single trailing newline.
