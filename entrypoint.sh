@@ -1,9 +1,21 @@
 #!/usr/bin/env bash
+# /**
+#  * Smart Doc — Entrypoint Orchestrator
+#  * Responsibility:
+#  *   - Orchestrate the Smart Doc pipeline in CI/local runs.
+#  *   - Delegate diff resolution and prompt construction to scripts/prompt-builder.sh.
+#  *   - Invoke Codex CLI in workspace-write mode to generate/write documentation.
+#  *   - Handle PR branch/creation/merge logic on push events (no push on pull_request).
+#  * Invariants (keep in future iterations):
+#  *   - Never resolve diffs or assemble prompts inline; always use Prompt Builder.
+#  *   - Only write under docs/ and SMART_TIMELINE.md (enforced downstream today by Codex behavior and audit steps).
+#  *   - Keep logs concise with emojis; avoid dumping large diffs to logs.
+#  */
 set -euo pipefail
 
-log() { echo "[smart-doc] $*"; }
-warn() { echo "::warning::$*"; }
-err() { echo "::error::$*"; }
+log() { echo "📝 [smart-doc] $*"; }
+warn() { echo "::warning::⚠️ $*"; }
+err() { echo "::error::❌ $*"; }
 
 # Inputs (from composite action env)
 INPUT_BRANCH=${INPUT_BRANCH:-main}
@@ -44,71 +56,33 @@ if [[ -z "${OPENAI_API_KEY:-}" ]]; then
 fi
 log "Auth configured: OPENAI_API_KEY is set."
 
-## Note: model selection and MCP config removed for Codex CLI path
-
-# Determine changed files range using GitHub API via gh
-EVENT_NAME=${GITHUB_EVENT_NAME:-push}
-REPO=${GITHUB_REPOSITORY}
-if [[ "$EVENT_NAME" == "pull_request" ]]; then
-  BASE=${GITHUB_BASE_REF}
-  HEAD=${GITHUB_SHA}
-  CHANGED_FILES=$(gh api \
-    repos/${REPO}/compare/${BASE}...${HEAD} \
-    --jq '.files[].filename' 2>/dev/null || true)
-else
-  BASE=$(jq -r '.before // empty' "$GITHUB_EVENT_PATH" || true)
-  HEAD=${GITHUB_SHA}
-  if [[ -n "$BASE" ]]; then
-    CHANGED_FILES=$(gh api \
-      repos/${REPO}/compare/${BASE}...${HEAD} \
-      --jq '.files[].filename' 2>/dev/null || true)
-  else
-    # First commit on branch: include all tracked files
-    CHANGED_FILES=$(git ls-files || true)
-  fi
+# Build prompt via Prompt Builder (single source of truth for diffs and patches)
+PROMPT_FILE=$(mktemp)
+BUILDER_PATH="${GITHUB_ACTION_PATH:-.}/scripts/prompt-builder.sh"
+if [[ ! -f "$BUILDER_PATH" ]]; then
+  BUILDER_PATH="./scripts/prompt-builder.sh"
 fi
+log "Building prompt using $BUILDER_PATH"
+# 1) Validate environment and inputs
+bash "${GITHUB_ACTION_PATH:-.}/scripts/validator.sh"
 
-if [[ -z "${CHANGED_FILES//[[:space:]]/}" ]]; then
-  log "No changed files detected. Nothing to document."
+# 2) Detect diffs (writes tmp/changed_files.txt and tmp/patch.diff)
+bash "${GITHUB_ACTION_PATH:-.}/scripts/diff-detector.sh"
+
+# If no changed files, soft exit
+if [[ ! -s tmp/changed_files.txt ]]; then
+  warn "No changed files detected. Nothing to document."
   exit 0
 fi
 
-log "Changed files:\n$CHANGED_FILES"
+# 3) Build prompt (consumes tmp/*.txt and tmp/*.diff) → tmp/prompt.md
+bash "$BUILDER_PATH" > "$PROMPT_FILE"
 
-# Build prompt
-PROMPT_FILE=$(mktemp)
-if [[ -n "$INPUT_PROMPT_TEMPLATE" && -f "$INPUT_PROMPT_TEMPLATE" ]]; then
-  cat "$INPUT_PROMPT_TEMPLATE" > "$PROMPT_FILE"
-else
-  # Use default prompt packaged with the action
-  cat "${GITHUB_ACTION_PATH}/prompts/default.md" > "$PROMPT_FILE"
-fi
+# 4) Update docs via Codex write mode (sets tmp/have_changes.flag)
+PROMPT_FILE="$PROMPT_FILE" bash "${GITHUB_ACTION_PATH:-.}/scripts/doc-updater.sh"
 
-{
-  echo
-  echo "---"
-  echo "Changed files:"; echo "$CHANGED_FILES"
-  echo "Docs folder: $INPUT_DOCS_FOLDER"
-  echo "Generate SMART_TIMELINE.md: $INPUT_GENERATE_HISTORY"
-} >> "$PROMPT_FILE"
-
-# Append unified diffs for precise, change-only documentation context
-if command -v gh >/dev/null 2>&1 && [[ -n "$REPO" && -n "$HEAD" ]]; then
-  if [[ -n "$BASE" ]]; then
-    echo >> "$PROMPT_FILE"
-    echo "Changed patches (unified diff):" >> "$PROMPT_FILE"
-    while IFS= read -r row; do
-      f=$(echo "$row" | base64 --decode | jq -r '.filename')
-      s=$(echo "$row" | base64 --decode | jq -r '.status')
-      p=$(echo "$row" | base64 --decode | jq -r '.patch // ""')
-      echo >> "$PROMPT_FILE"
-      echo "FILE: $f (status: $s)" >> "$PROMPT_FILE"
-      echo '```diff' >> "$PROMPT_FILE"
-      printf "%s\n" "$p" >> "$PROMPT_FILE"
-      echo '```' >> "$PROMPT_FILE"
-    done < <(gh api repos/${REPO}/compare/${BASE}...${HEAD} --jq '.files[] | {filename, status, patch: (.patch // "")} | @base64' 2>/dev/null || true)
-  fi
-fi
+# 5) Publish PR if changes and event is push
+bash "${GITHUB_ACTION_PATH:-.}/scripts/publisher.sh"
 
 ## Flag to detect if generation produced any file content
 DID_GENERATE=0
