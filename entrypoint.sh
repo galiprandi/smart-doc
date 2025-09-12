@@ -198,7 +198,7 @@ fi
 
 # Do not auto-create HISTORY.md; rely on tool output
 
-# Stage, commit, push only on push events
+# Stage and commit; create PR with auto-merge on push events
 if [[ "$EVENT_NAME" == "pull_request" ]]; then
   warn "Pull request event detected: will not push changes. Review artifacts in the PR run."
   # Optional: comment summary on PR
@@ -219,6 +219,39 @@ if git diff --cached --quiet; then
 fi
 
 git commit -m "docs: update documentation via Smart Doc"
-git push || warn "Git push failed (possibly due to permissions)."
 
-log "Smart Doc completed successfully."
+# For protected branches, open a PR with auto-merge instead of pushing to main
+SHORT_SHA=$(printf "%s" "$GITHUB_SHA" | cut -c1-7)
+TARGET_BRANCH="${INPUT_BRANCH:-main}"
+UPDATE_BRANCH="smart-doc/docs-update-${SHORT_SHA}"
+
+log "Creating update branch: $UPDATE_BRANCH (target: $TARGET_BRANCH)"
+git switch -c "$UPDATE_BRANCH" || git checkout -b "$UPDATE_BRANCH"
+
+if ! git push -u origin "$UPDATE_BRANCH"; then
+  warn "Failed to push update branch. Exiting without PR creation."
+  exit 0
+fi
+
+# Create or reuse PR
+PR_URL=""
+if PR_URL=$(gh pr create --base "$TARGET_BRANCH" --head "$UPDATE_BRANCH" \
+  --title "docs: update via Smart Doc ($SHORT_SHA)" \
+  --body "Auto-generated documentation updates for commit $GITHUB_SHA" 2>/dev/null); then
+  log "Opened PR: $PR_URL"
+else
+  warn "PR creation failed; attempting to find existing PR for $UPDATE_BRANCH"
+  PR_URL=$(gh pr list --head "$UPDATE_BRANCH" --json url --jq '.[0].url' 2>/dev/null || true)
+  if [[ -n "$PR_URL" ]]; then
+    log "Found existing PR: $PR_URL"
+  else
+    warn "No PR found for $UPDATE_BRANCH."
+  fi
+fi
+
+# Try to enable auto-merge (squash); ignore if not permitted
+if [[ -n "$PR_URL" ]]; then
+  gh pr merge --auto --squash "$PR_URL" >/dev/null 2>&1 || warn "Auto-merge not enabled or failed."
+fi
+
+log "Smart Doc completed (branch: $UPDATE_BRANCH${PR_URL:+, PR: $PR_URL})."

@@ -17,10 +17,10 @@ Why Smart Doc
 - Scales with you: from single repos to large monorepos.
 
 How it works (at a glance)
-- On merges to `main`, Smart Doc:
+- On changes to `main`, Smart Doc:
   - Detects changed files and unified diffs.
-  - Updates or creates pages in `docs/` with explanations and diagrams.
-  - Commits the resulting documentation automatically.
+  - Updates or creates pages in `docs/` with explanations and diagrams (English, change‑only).
+  - Opens an auto‑merge Pull Request to `main` with the generated docs — perfect for protected branches.
 - On pull requests, you get a safe preview without pushing commits.
 
 Minimal setup
@@ -53,6 +53,10 @@ jobs:
           generate_history: 'true'
           # Optional: custom prompt
           # prompt_template: prompts/default.md
+
+permissions:
+  contents: write
+  pull-requests: write
 ```
 
 Model compatibility
