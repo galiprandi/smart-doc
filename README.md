@@ -21,10 +21,11 @@ Smart Doc is a GitHub Action that turns each merge into precise, change‑only d
 flowchart LR
     A[Workflow trigger] --> B[validator.sh]
     B --> C[diff-detector.sh]
-    C -->|tmp/changed_files.txt\ntmp/patch.diff| D[prompt-builder.sh]
+    C -->|tmp artifacts| D[prompt-builder.sh]
     D -->|tmp/prompt.md| E[doc-updater.sh]
-    E -->|updates docs/\nSMART_TIMELINE.md| F{changes?}
-    F -- yes --> G[publisher.sh]\n--> H[Docs PR]
+    E -->|updates docs/ and SMART_TIMELINE.md| F{changes?}
+    F -- yes --> G[publisher.sh]
+    G --> H[Docs PR]
     F -- no --> I[No-op]
 ```
 
@@ -98,3 +99,5 @@ This README is focused on users. If you want to contribute to Smart Doc or run l
 
 ## License
 MIT
+
+<!-- render-ping: 2025-09-12 -->
