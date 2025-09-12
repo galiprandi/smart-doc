@@ -29,6 +29,9 @@ node_modules/
 # Generated artifacts (keep docs tracked; do not ignore docs/ or SMART_TIMELINE.md)
 # If you generate temporary previews elsewhere, add them here.
 
+# Smart Doc working directory (temporary runtime artifacts)
+tmp/
+
 # macOS metadata
 .AppleDouble
 .LSOverride
