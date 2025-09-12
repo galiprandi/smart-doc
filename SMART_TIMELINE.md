@@ -21,3 +21,11 @@
 - Tickets: 
 - Scope: .github/workflows/smart-doc.yml
 - TL;DR: Switch workflow to `uses: ./` to run the local action for self-testing.
+
+## Docs: update via Smart Doc (a061e99)
+- Date: 2025-09-12
+- PR: #4
+- Commit: a061e99
+- Tickets: 
+- Scope: docs/README.md
+- TL;DR: Update documentation based on this commit's diff (change-only, English).
