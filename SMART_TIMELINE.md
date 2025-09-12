@@ -12,4 +12,12 @@
 - Commit: c9084ed
 - Tickets: 
 - Scope: entrypoint.sh, README.md, .github/workflows/smart-doc.yml
-- TL;DR: Bootstrap gh auth (GH_TOKEN/GITHUB_TOKEN), use explicit --repo for PR create/list/merge, and document optional GH_TOKEN usage.
+ - TL;DR: Bootstrap gh auth (GH_TOKEN/GITHUB_TOKEN), use explicit --repo for PR create/list/merge, and document optional GH_TOKEN usage.
+
+## Safer update-branch push and reuse
+- Date: 2025-09-12
+- PR: #TODO
+- Commit: TODO
+- Tickets: 
+- Scope: entrypoint.sh
+- TL;DR: Fetch/prune origin, reuse remote docs-update branch when present, and fall back to push with --force-with-lease on non fast-forward.

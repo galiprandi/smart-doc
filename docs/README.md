@@ -8,6 +8,7 @@ What changed in this update
 - GitHub CLI auth is bootstrapped using `GH_TOKEN` (preferred when provided) or `GITHUB_TOKEN`.
 - PR operations explicitly pass `--repo <owner/repo>` to `gh` for reliability.
 - PR merge step also uses `--repo`; warnings improved when tokens/permissions are missing.
+ - Safer update-branch handling: fetch/prune `origin`, reuse remote `smart-doc/docs-update-<short-sha>` if it exists, and fall back to `git push --force-with-lease` only when an initial push is non fast-forward.
 
 Quickstart
 - Secret: `SMART_DOC_API_TOKEN` (exported to `OPENAI_API_KEY`).
@@ -18,7 +19,7 @@ Quickstart
   - Optionally: `env.GH_TOKEN: ${{ secrets.GH_PAT }}`
 
 Runtime behavior (relevant parts)
-- Creates branch `smart-doc/docs-update-<short-sha>` and pushes it.
+- Creates branch `smart-doc/docs-update-<short-sha>`; bases it on `origin/<branch>` when present, then pushes. If the first push fails (likely non fast-forward), retries with `--force-with-lease`.
 - Creates or reuses a PR targeting `branch` (default `main`) using `gh pr create --repo <slug>`.
 - Attempts auto‑merge (squash) via `gh pr merge --repo <slug> --auto --squash` when allowed.
 
@@ -28,4 +29,3 @@ Folder structure (docs)
 - `docs/architecture/overview.md` — flow and decisions.
 - `docs/architecture/diagram.md` — Mermaid overview.
 - `docs/modules/entrypoint.md` — `entrypoint.sh` responsibilities and interfaces.
-
