@@ -141,3 +141,46 @@ Quick recipes
 | Monorepo selective | Use `paths:` filters per app/package | Same | Run only when certain folders change. |
 
 Tip: keep `concurrency.cancel-in-progress: true` and the anti‑loop job condition to avoid cycles when Smart Doc opens a docs PR.
+
+Monorepo selective (paths filters) — example
+```yaml
+name: Smart Doc (frontend only)
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - apps/frontend/**
+      - packages/ui/**
+    paths-ignore:
+      - 'docs/**'
+      - 'HISTORY.md'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - apps/frontend/**
+      - packages/ui/**
+
+concurrency:
+  group: smart-doc-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update-docs:
+    if: >
+      ${{ github.event_name != 'push' || (
+            !startsWith(github.ref_name, 'smart-doc/docs-update-') &&
+            github.actor != 'github-actions[bot]'
+          ) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Smart Doc
+        uses: galiprandi/smart-doc@v1
+        with:
+          smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
+          branch: main
+          docs_folder: docs
+          generate_history: 'true'
+```
