@@ -1,5 +1,5 @@
 name: 'Smart Doc'
-description: 'Automatically updates documentation using AI and enriches it with context.'
+description: 'Keep your documentation up to date with each integration into main. Smart Doc converts code changes into clear docs (README, stack, architecture, modules) using AI — compatible with OpenAI and adaptable to Qwen.'
 branding:
   icon: 'book-open'
   color: 'purple'
