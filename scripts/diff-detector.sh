@@ -20,6 +20,8 @@ err() { echo "::error::❌ $*"; }
 INPUT_BRANCH=${INPUT_BRANCH:-main}
 INPUT_INCLUDE_WORKING=${INPUT_INCLUDE_WORKING:-false}
 INPUT_PATCH_FILE=${INPUT_PATCH_FILE:-}
+EVENT_NAME=${GITHUB_EVENT_NAME:-}
+BASE_REF_ENV=${GITHUB_BASE_REF:-}
 
 TMP_DIR="tmp"
 mkdir -p "$TMP_DIR"
@@ -42,9 +44,24 @@ fi
 # 2) Local git resolution (only if no injected patch)
 if [[ ! -s "$PATCH_OUT" ]]; then
   BASE_LOCAL=""
-  if git rev-parse --verify "$INPUT_BRANCH" >/dev/null 2>&1; then
-    BASE_LOCAL=$(git merge-base "$INPUT_BRANCH" HEAD || true)
+  # Prefer PR base when available
+  if [[ "$EVENT_NAME" == "pull_request" && -n "$BASE_REF_ENV" ]]; then
+    if git rev-parse --verify "$BASE_REF_ENV" >/dev/null 2>&1; then
+      BASE_LOCAL=$(git merge-base "$BASE_REF_ENV" HEAD || true)
+    fi
   fi
+  # Otherwise, use configured INPUT_BRANCH
+  if [[ -z "$BASE_LOCAL" && -n "$INPUT_BRANCH" ]]; then
+    if git rev-parse --verify "$INPUT_BRANCH" >/dev/null 2>&1; then
+      BASE_LOCAL=$(git merge-base "$INPUT_BRANCH" HEAD || true)
+    fi
+  fi
+  # If merge-base equals HEAD (e.g., push on base branch), fallback to HEAD~1
+  HEAD_SHA=$(git rev-parse HEAD 2>/dev/null || echo "")
+  if [[ -n "$BASE_LOCAL" && -n "$HEAD_SHA" && "$BASE_LOCAL" == "$HEAD_SHA" ]]; then
+    BASE_LOCAL=$(git rev-parse HEAD~1 2>/dev/null || echo "")
+  fi
+  # Final fallback
   if [[ -z "$BASE_LOCAL" ]]; then
     BASE_LOCAL=$(git rev-parse HEAD~1 2>/dev/null || true)
   fi
