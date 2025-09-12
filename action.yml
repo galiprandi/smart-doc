@@ -22,7 +22,7 @@ inputs:
     required: false
     default: 'gpt-5-nano'
   generate_history:
-    description: 'Generate HISTORY.md with ticket context (default: true)'
+    description: 'Generate SMART_TIMELINE.md with ticket context (default: true)'
     required: false
     default: 'true'
   smart_doc_api_token:

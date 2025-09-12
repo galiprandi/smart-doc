@@ -85,7 +85,7 @@ fi
   echo "---"
   echo "Changed files:"; echo "$CHANGED_FILES"
   echo "Docs folder: $INPUT_DOCS_FOLDER"
-  echo "Generate HISTORY.md: $INPUT_GENERATE_HISTORY"
+  echo "Generate SMART_TIMELINE.md: $INPUT_GENERATE_HISTORY"
 } >> "$PROMPT_FILE"
 
 # Append unified diffs for precise, change-only documentation context
@@ -151,7 +151,7 @@ openai_generate() {
       if [[ "$line" =~ ^===\ FILE:\ (.+)\ ===$ ]]; then
         path="${BASH_REMATCH[1]}"
         [[ "$path" == /* ]] && path="${path#/}"
-        if [[ "$path" != docs/* && "$path" != HISTORY.md ]]; then
+        if [[ "$path" != docs/* && "$path" != SMART_TIMELINE.md ]]; then
           path="$INPUT_DOCS_FOLDER/$path"
         fi
         path="${path//../}"
@@ -165,7 +165,7 @@ openai_generate() {
       fi
     done < "$tmpout"
     DID_GENERATE=1
-    log "Wrote files from markers under $INPUT_DOCS_FOLDER (and HISTORY.md if present)."
+    log "Wrote files from markers under $INPUT_DOCS_FOLDER (and SMART_TIMELINE.md if present)."
   else
     printf "%s\n" "$output" > "$INPUT_DOCS_FOLDER/README.md"
     DID_GENERATE=1
@@ -196,7 +196,7 @@ if ! run_codex; then
   warn "Codex CLI execution failed; no documentation changes will be made."
 fi
 
-# Do not auto-create HISTORY.md; rely on tool output
+# Do not auto-create SMART_TIMELINE.md; rely on tool output
 
 # Stage and commit; create PR with auto-merge on push events
 if [[ "$EVENT_NAME" == "pull_request" ]]; then

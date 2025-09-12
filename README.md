@@ -5,7 +5,7 @@
 Smart Doc keeps your documentation fresh automatically on every integration (main, develop, release, or PRs) — you choose the trigger.
 
 Benefits
-- Change‑driven updates: turns each commit diff into clear, useful docs under `docs/` (and optionally `HISTORY.md`).
+- Change‑driven updates: turns each commit diff into clear, useful docs under `docs/` (and optionally `SMART_TIMELINE.md`).
 - Architecture and modules, minus the friction: generates concise summaries, Mermaid diagrams, and per‑module pages when relevant.
 - Zero manual effort: runs as a GitHub Action on every push or PR; pushes commits on `main`, never on PRs.
 - Flexible by design: works with any stack. Built for OpenAI (Codex/GPT‑5) and easy to adapt for Qwen/Qwen‑Code.
@@ -35,7 +35,7 @@ on:
     branches: [ main ]
     paths-ignore:
       - 'docs/**'
-      - 'HISTORY.md'
+      - 'SMART_TIMELINE.md'
   pull_request:
     branches: [ main ]
 
@@ -91,7 +91,7 @@ on:
       - main            # trunk/main
     paths-ignore:
       - 'docs/**'
-      - 'HISTORY.md'
+      - 'SMART_TIMELINE.md'
   pull_request:
     branches: [ main, develop ]
 

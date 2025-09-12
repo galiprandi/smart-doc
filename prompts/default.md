@@ -3,7 +3,7 @@ Goal: Update ONLY the documentation under `docs/` that is relevant to THIS commi
 
 Principles
 - Language: English, concise and professional.
-- Do not modify source code — only write/update files inside `docs/` and optionally the root `HISTORY.md`.
+- Do not modify source code — only write/update files inside `docs/` and optionally the root `SMART_TIMELINE.md`.
 - Be additive and idempotent: preserve useful content; avoid unnecessary churn.
 - Do not fabricate components. If something cannot be inferred from the diff/context, add a short line with "TODO: …" and move on.
 
@@ -19,16 +19,19 @@ Inputs you receive
 - Use ONLY this information plus minimal surrounding context from the repository if needed to keep documents coherent (e.g., existing doc pages you are updating).
 
 Output behavior
-- Write/update files directly under `docs/` (and `HISTORY.md` if appropriate). Do not print extra console output.
+- Write/update files directly under `docs/` (and `SMART_TIMELINE.md` if appropriate). Do not print extra console output.
 - Keep documents in English and align terminology with what appears in the diff.
 
 Change log (optional)
-- File: `HISTORY.md` at the repo root. Append-only; never rewrite or reorder prior entries.
+- File: `SMART_TIMELINE.md` at the repo root. Append-only; never rewrite or reorder prior entries.
 - Language: English only.
 - Exact Markdown format per entry (no extra text):
   ## <Concise title>
   - Date: YYYY-MM-DD
-  - Scope: <areas/modules>
+  - PR: #<number>
+  - Commit: <short-sha>
+  - Tickets: <Jira keys if any>
+  - Scope: <areas/modules or file paths>
   - TL;DR: <one-sentence summary>
 - Spacing requirements:
   - Ensure a blank line before each new entry (if the file does not end with a newline, add one first).
