@@ -16,6 +16,18 @@ Smart Doc is a GitHub Action that turns each merge into precise, change‑only d
 2) Build a focused prompt and generate concise docs under `docs/` (English only). Optionally append to `SMART_TIMELINE.md`.
 3) Create/update `smart-doc/docs-update-<sha>` and open a PR; optionally auto‑merge when safe.
 
+### Pipeline (Mermaid)
+```mermaid
+flowchart LR
+    A[Workflow trigger] --> B[validator.sh]
+    B --> C[diff-detector.sh]
+    C -->|tmp/changed_files.txt\ntmp/patch.diff| D[prompt-builder.sh]
+    D -->|tmp/prompt.md| E[doc-updater.sh]
+    E -->|updates docs/\nSMART_TIMELINE.md| F{changes?}
+    F -- yes --> G[publisher.sh]\n--> H[Docs PR]
+    F -- no --> I[No-op]
+```
+
 ## Requirements
 - GitHub Actions enabled on your repository.
 - Secret: `SMART_DOC_API_TOKEN` (exported as `OPENAI_API_KEY`).
@@ -75,6 +87,11 @@ See [`USAGE.md`](./USAGE.md) for:
 - Mermaid diagrams? Yes, when they add value.
 - Runs on PRs? Yes; preview‑only (no pushes). On `main`, opens a docs PR and can auto‑merge.
 - Local preview? Yes — see contributor docs below for a test runner and diff injection.
+
+### PR‑first behavior (example)
+- After a push to `main`, Smart Doc creates a branch `smart-doc/docs-update-<short-sha>` and opens a PR.
+- The PR contains only changes under `docs/` and optionally `SMART_TIMELINE.md`.
+- You can enable auto‑merge (squash). If nothing meaningful was generated, no PR is opened.
 
 ## Contributing / Extending
 This README is focused on users. If you want to contribute to Smart Doc or run local previews, see [`CONTRIBUTING.md`](./CONTRIBUTING.md).

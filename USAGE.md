@@ -11,7 +11,7 @@ This guide complements the README with alternative setups, advanced options, and
 
 ## Minimal workflow (from README)
 ```yaml
-ame: Smart Doc
+name: Smart Doc
 on:
   push:
     branches: [ main ]
@@ -89,6 +89,92 @@ on:
     paths:
       - apps/frontend/**
       - packages/ui/**
+```
+
+### Monorepo — per-package jobs (matrix)
+Run Smart Doc separately for multiple packages/workspaces. Each job scopes `paths` and can write docs into a package‑specific folder (optional) or a shared `docs/` with module pages.
+
+```yaml
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'docs/**'
+      - 'SMART_TIMELINE.md'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        scope:
+          - name: frontend
+            paths: 'apps/frontend/**'
+          - name: api
+            paths: 'apps/api/**'
+          - name: ui
+            paths: 'packages/ui/**'
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Skip if matrix scope not touched
+        id: changed
+        run: |
+          set -euo pipefail
+          BASE="${{ github.event_name == 'pull_request' && github.base_ref || 'origin/main' }}"
+          git fetch origin "$BASE" --depth=1 || true
+          CHANGED=$(git diff --name-only ${BASE:+"$BASE"}..."${{ github.sha }}" || true)
+          if echo "$CHANGED" | grep -E '^${{ matrix.scope.paths }}'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Smart Doc (${{ matrix.scope.name }})
+        if: steps.changed.outputs.run == 'true'
+        uses: galiprandi/smart-doc@v1
+        with:
+          smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
+          branch: main
+          docs_folder: docs
+          generate_history: 'true'
+```
+
+### Multi-branch strategy (develop + main)
+Use previews on PRs (develop, main) and publish only on main.
+
+```yaml
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'docs/**'
+      - 'SMART_TIMELINE.md'
+  pull_request:
+    branches: [ main, develop ]
+
+concurrency:
+  group: smart-doc-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+```
+
+### PR preview artifact (optional)
+Download generated docs from PR runs without publishing:
+
+```yaml
+- name: Upload docs preview
+  if: ${{ github.event_name == 'pull_request' }}
+  uses: actions/upload-artifact@v4
+  with:
+    name: smart-doc-preview
+    path: |
+      docs/**
+      SMART_TIMELINE.md
+    if-no-files-found: warn
 ```
 
 ## Authentication options for `gh`
