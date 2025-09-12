@@ -12,4 +12,9 @@ This folder hosts Smart Doc’s internal documentation. See `AGENTS.md` at the r
 
 - Monorepo selective (paths filters): scope Smart Doc runs to specific subfolders (e.g., `apps/frontend/**`, `packages/ui/**`). Keep `paths-ignore` for `docs/**` and `SMART_TIMELINE.md`, preserve the anti‑loop job condition, and set `concurrency.cancel-in-progress: true`. See `README.md` for the full “Monorepo selective (paths filters) — example” YAML.
 
+## Outputs
+- Generated docs live under `docs/` and are scoped to the latest commit diff.
+- Timeline: optional `SMART_TIMELINE.md` at the repo root (append‑only). Format fields: Date (YYYY‑MM‑DD), PR, Commit (short‑sha), Tickets (optional), Scope (areas/paths), TL;DR. Separation: exactly one blank line between entries; end with a trailing newline. Controlled by input `generate_history`.
+- Anti‑loop snippet: include `docs/**` and `SMART_TIMELINE.md` in `paths-ignore` on push jobs.
+
 TODO: Expand module and architecture docs as code changes introduce or modify components.
