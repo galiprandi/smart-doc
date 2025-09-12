@@ -88,31 +88,23 @@ fi
   echo "Generate HISTORY.md: $INPUT_GENERATE_HISTORY"
 } >> "$PROMPT_FILE"
 
-# Instrucciones de salida alternativas: si el agente no puede escribir archivos,
-# que imprima archivos con marcadores para que este script los escriba.
-cat >> "$PROMPT_FILE" <<'EOF'
-
----
-Si no puedes escribir en el sistema de archivos, imprime la salida usando marcadores de archivo exactamente así (sin texto extra):
-
-=== FILE: docs/README.md ===
-...contenido...
-=== FILE: docs/stack.md ===
-...contenido...
-=== FILE: docs/architecture/overview.md ===
-...contenido...
-=== FILE: docs/architecture/diagram.md ===
-```mermaid
-flowchart LR
-  A --> B
-```
-=== FILE: docs/modules/<modulo>.md ===
-...contenido...
-=== FILE: HISTORY.md ===
-...entrada...
-
-Solo usa estos bloques. No imprimas nada fuera de ellos.
-EOF
+# Append unified diffs for precise, change-only documentation context
+if command -v gh >/dev/null 2>&1 && [[ -n "$REPO" && -n "$HEAD" ]]; then
+  if [[ -n "$BASE" ]]; then
+    echo >> "$PROMPT_FILE"
+    echo "Changed patches (unified diff):" >> "$PROMPT_FILE"
+    while IFS= read -r row; do
+      f=$(echo "$row" | base64 --decode | jq -r '.filename')
+      s=$(echo "$row" | base64 --decode | jq -r '.status')
+      p=$(echo "$row" | base64 --decode | jq -r '.patch // ""')
+      echo >> "$PROMPT_FILE"
+      echo "FILE: $f (status: $s)" >> "$PROMPT_FILE"
+      echo '```diff' >> "$PROMPT_FILE"
+      printf "%s\n" "$p" >> "$PROMPT_FILE"
+      echo '```' >> "$PROMPT_FILE"
+    done < <(gh api repos/${REPO}/compare/${BASE}...${HEAD} --jq '.files[] | {filename, status, patch: (.patch // "")} | @base64' 2>/dev/null || true)
+  fi
+fi
 
 ## Flag to detect if generation produced any file content
 DID_GENERATE=0
@@ -197,15 +189,7 @@ run_codex() {
   return 1
 }
 if ! run_codex; then
-  warn "Codex CLI execution failed; proceeding to fallback (Responses API)."
-fi
-
-# Si no hay cambios en el FS (agente en modo solo-lectura), usar fallback con marcadores
-if git diff --quiet; then
-  log "No changes detected from Codex agent. Falling back to Responses API with file markers."
-  if ! openai_generate "$PROMPT_FILE"; then
-    warn "Fallback generation failed or returned no output."
-  fi
+  warn "Codex CLI execution failed; no documentation changes will be made."
 fi
 
 # Do not auto-create HISTORY.md; rely on tool output
