@@ -143,6 +143,9 @@ fi
   echo "Generate HISTORY.md: $INPUT_GENERATE_HISTORY"
 } >> "$PROMPT_FILE"
 
+## Flag to detect if generation produced any file content
+DID_GENERATE=0
+
 openai_generate() {
   local prompt_file="$1"
   local model_flag
@@ -164,35 +167,56 @@ openai_generate() {
     -d @<(jq -n --arg m "$model_flag" --arg p "$(sed 's/\\/\\\\/g' "$prompt_file" | sed 's/"/\\"/g')" '{model:$m, input:$p}') \
     > "$response_file"
   local output
-  output=$(jq -r '(.output_text // .choices[0].message.content // .data[0].text // empty)' "$response_file") || true
+  output=$(jq -r '
+    ( .output_text //
+      ( .output[]? | .content[]? | select(.type=="output_text") | .text ) //
+      .choices[0]?.message?.content //
+      .data[0]?.text // empty )' "$response_file") || true
   if [[ -z "$output" || "$output" == "null" ]]; then
     warn "OpenAI response contained no output. Showing first 200 lines:"
     sed -n '1,200p' "$response_file" || true
     return 1
   fi
   mkdir -p "$INPUT_DOCS_FOLDER"
-  printf "%s\n" "$output" > "$INPUT_DOCS_FOLDER/README.md"
-  log "Wrote generated content to $INPUT_DOCS_FOLDER/README.md"
+  # If output contains file markers, split into files; else write to README
+  local tmpout
+  tmpout=$(mktemp)
+  printf "%s\n" "$output" > "$tmpout"
+  if grep -q '^=== FILE: ' "$tmpout"; then
+    local current=""
+    while IFS= read -r line; do
+      if [[ "$line" =~ ^===\ FILE:\ (.+)\ ===$ ]]; then
+        path="${BASH_REMATCH[1]}"
+        [[ "$path" == /* ]] && path="${path#/}"
+        if [[ "$path" != docs/* && "$path" != HISTORY.md ]]; then
+          path="$INPUT_DOCS_FOLDER/$path"
+        fi
+        path="${path//../}"
+        mkdir -p "$(dirname "$path")"
+        current="$path"
+        : > "$current"
+        continue
+      fi
+      if [[ -n "$current" ]]; then
+        printf '%s\n' "$line" >> "$current"
+      fi
+    done < "$tmpout"
+    DID_GENERATE=1
+    log "Wrote files from markers under $INPUT_DOCS_FOLDER (and HISTORY.md if present)."
+  else
+    printf "%s\n" "$output" > "$INPUT_DOCS_FOLDER/README.md"
+    DID_GENERATE=1
+    log "Wrote generated content to $INPUT_DOCS_FOLDER/README.md"
+  fi
 }
 
 log "Running Smart Doc with OpenAI (Responses API)..."
 if ! openai_generate "$PROMPT_FILE"; then
-  warn "OpenAI generation failed; seeding minimal docs if not present."
-  if [[ ! -f "$INPUT_DOCS_FOLDER/README.md" ]]; then
-    cat > "$INPUT_DOCS_FOLDER/README.md" << 'EOSEED'
-# Project Documentation
-
-This is an auto-generated documentation seed. Content generation failed or produced no output.
-
-- Architecture: see ./architecture/overview.md
-- Stack: see ./stack.md
-- Modules: see ./modules/
-EOSEED
-  fi
+  warn "OpenAI generation failed; no changes will be made."
 fi
 
-# Optionally generate/update HISTORY.md marker if requested and file missing
-if [[ "${INPUT_GENERATE_HISTORY,,}" == "true" ]]; then
+# Optionally create HISTORY.md only if generation produced content
+if [[ "${INPUT_GENERATE_HISTORY,,}" == "true" && $DID_GENERATE -eq 1 ]]; then
   if [[ ! -f "HISTORY.md" ]]; then
     echo -e "# HISTORY\n" > HISTORY.md
   fi

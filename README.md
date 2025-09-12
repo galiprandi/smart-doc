@@ -4,7 +4,7 @@ Smart Doc is a simple composite GitHub Action that analyzes code changes and upd
 
 Key points
 - Composite action (Bash): minimal and maintainable.
-- Uses Qwen-Code CLI. Default model (por ahora): `openai:gpt-5-nano`.
+- Uses OpenAI Responses API (no fallback seed; only writes when the model returns content). Default model: `gpt-5-nano`.
 - MCP (Jira/ClickUp) optional via `~/.qwen/settings.json` when secrets are provided.
 
 Usage
@@ -56,8 +56,8 @@ Inputs
 How it works
 - Computes changed files using GitHub API via `gh api repos/<owner>/<repo>/compare/<base>...<head>`.
 - Builds the prompt (custom or default) and appends changed files context.
-- Uses model set by `model` (default: `openai:gpt-5-nano`).
-- Runs `qwen` in non‑interactive mode con `-p` o vía stdin.
+- Calls OpenAI Responses API with the selected model (default: `gpt-5-nano`).
+- Only writes files when the API returns usable content; otherwise it does nothing.
 - Posts a PR comment summary (on PRs). On `push` events, stages/commits/pushes doc changes.
 
 Notes on MCP
