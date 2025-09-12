@@ -1,0 +1,55 @@
+name: Guard Docs on develop
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+permissions:
+  contents: read
+
+jobs:
+  guard-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changes in docs/ or SMART_TIMELINE.md
+        id: detect
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Resolve BASE and HEAD depending on event
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE="${{ github.base_ref }}"
+            HEAD="${{ github.sha }}"
+          else
+            # push event to develop
+            BASE=$(git rev-parse HEAD^ || true)
+            HEAD=$(git rev-parse HEAD)
+          fi
+
+          if [[ -n "$BASE" ]]; then
+            git fetch origin "$BASE" --depth=1 || true
+          fi
+
+          CHANGED=$(git diff --name-only ${BASE:+"$BASE"}..."$HEAD" || true)
+
+          echo "Changed files:\n$CHANGED"
+
+          if echo "$CHANGED" | grep -E '^(docs/|SMART_TIMELINE\.md)'; then
+            echo "violations=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "violations=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fail if violations found
+        if: steps.detect.outputs.violations == 'true'
+        run: |
+          echo "❌ Docs or SMART_TIMELINE.md changes detected on 'develop'. These should not be pushed to develop."
+          exit 1
