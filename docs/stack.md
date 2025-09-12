@@ -5,7 +5,7 @@ Languages and Runtimes
 
 CLIs and Libraries
 - OpenAI Codex CLI (`code`/`codex`/`@openai/codex` via `npx`) — generates documentation from prompts.
-- `gh` (GitHub CLI) — computes changed files/diffs for context.
+- `gh` (GitHub CLI) — computes changed files/diffs and opens PRs with optional auto‑merge.
 - `jq` — JSON extraction for prompt assembly and response parsing.
 - `curl` — used by the fallback OpenAI Responses API path.
 
@@ -26,11 +26,12 @@ Provider Compatibility
 
 Build/Test Tooling
 - GitHub Actions runtime executes `entrypoint.sh`.
-- Git stages/commits/pushes generated docs on push events; PRs skip push.
+- On push events, Smart Doc commits changes, creates an update branch, opens a PR to the target branch, and attempts auto‑merge; on PR events, it generates a preview without pushing.
 
 Requirements
 - Runner tools: `gh`, `jq`, `git`, and at least one of `code`, `codex`, or `node + npx`.
 - Network access to OpenAI endpoints and for `npx @openai/codex` when needed.
+- GitHub token permissions: `contents: write` and `pull-requests: write`.
 
 Notes
 - Approval behavior follows Codex CLI defaults since `--approval` is not provided.

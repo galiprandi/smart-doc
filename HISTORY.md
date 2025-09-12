@@ -13,6 +13,11 @@
 - Scope: docs (README, stack, architecture), action.yml
 - TL;DR: Updated documentation to reflect provider‑agnostic positioning (OpenAI first‑class, Qwen adaptable), clarified outputs (README, stack, architecture, modules), and aligned usage to `galiprandi/smart-doc@v1`.
 
+## Switch to PR-based doc updates
+- Date: 2025-09-12
+- Scope: entrypoint.sh, workflow, docs
+- TL;DR: Create a docs update branch and open an auto-merge PR on push; require pull-requests: write permission and update docs/workflow examples accordingly.
+
 ## Clarify HISTORY.md formatting rules
 - Date: 2025-09-12
 - Scope: prompts, docs

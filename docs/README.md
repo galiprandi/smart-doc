@@ -4,14 +4,14 @@ Purpose
 - Keep repository documentation living and change‑driven by analyzing diffs and writing updates under `docs/` (and optionally `HISTORY.md`).
 
 This Commit
-- Updated positioning: living documentation, provider‑agnostic with OpenAI first‑class and adaptable to Qwen/Qwen‑Code.
-- Usage example now references `galiprandi/smart-doc@v1`.
-- Action description clarified to include README, stack, architecture, and modules as target outputs.
+- Updated behavior: on changes to `main`, Smart Doc stages and commits docs, then opens an auto‑merge Pull Request to the target branch instead of pushing directly. Requires `pull-requests: write`.
+- Workflow example remains `galiprandi/smart-doc@v1`.
+- Target outputs include README, stack, architecture, and modules as applicable.
 
 Quickstart
 - Trigger: Runs on push/PR via GitHub Actions.
 - Auth: Set `SMART_DOC_API_TOKEN` (exported as `OPENAI_API_KEY`).
-- Output: Writes docs in `docs/`. Pushes commits on `main`; PRs do not push.
+- Output: Writes docs in `docs/`. On `push`, creates an update branch and opens an auto‑merge PR to the target branch; on `pull_request`, generates a preview without pushing.
 
 Minimal workflow
 ```yaml
@@ -19,6 +19,10 @@ name: Smart Doc
 on:
   push:
     branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   update-docs:
@@ -52,6 +56,7 @@ Folder Structure
 Notes
 - Provider compatibility: OpenAI (Codex/GPT‑5) is primary; Qwen/Qwen‑Code is adaptable. TODO: Document Qwen setup if adopted.
 - Approval behavior follows Codex CLI defaults since no explicit `--approval` is passed.
+- Permissions: set `contents: write` and `pull-requests: write` so Smart Doc can open PRs and attempt auto‑merge on protected branches.
 
 Change Log Format (HISTORY.md)
 - Append‑only; never rewrite or reorder prior entries.

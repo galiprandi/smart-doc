@@ -10,13 +10,17 @@ flowchart TD
     CODEX[codex exec --sandbox workspace-write]
     NPX[npx -y @openai/codex exec --sandbox workspace-write]
     DOCS[Write docs under docs/]
-    GIT[(git add/commit/push on push events)]
+    GITADD[(git add)]
+    GITCOMMIT[(git commit)]
+    BRANCH[(git switch -c update-branch)]
+    PR[gh pr create]
+    AUTOMERGE[gh pr merge --auto --squash]
 
     GH --> EP --> PROMPT --> CODEBIN
     CODEBIN -->|VSCode code| CODE --> DOCS
     CODEBIN -->|codex| CODEX --> DOCS
     CODEBIN -->|fallback| NPX --> DOCS
-    DOCS --> GIT
+    DOCS --> GITADD --> GITCOMMIT --> BRANCH --> PR --> AUTOMERGE
 
     note right of EP
       Exports:
@@ -27,8 +31,8 @@ flowchart TD
     end note
 
     note left of GH
-      Provider compatibility:
-      - Primary: OpenAI (Codex/GPT‑5)
-      - Adaptable: Qwen/Qwen‑Code (optional)
+      Permissions required:
+      - contents: write
+      - pull-requests: write
     end note
 ```

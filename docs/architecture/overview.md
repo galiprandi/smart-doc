@@ -9,16 +9,19 @@ Key Flow
 - Build a structured prompt, including unified diffs.
 - Invoke Codex CLI with `CODEX_SANDBOX=workspace-write` and `CODEX_REASONING_EFFORT=medium`.
 - Fallback to `npx -y @openai/codex` if local binaries aren’t present.
-- On push events, commit and push any doc changes; on PR events, skip pushing and optionally comment a summary.
+- On push events, stage and commit doc changes, create an update branch, open a PR to the target branch (defaults to `main`), and attempt auto‑merge; on PR events, skip pushing and optionally comment a summary.
 
 Positioning Update (This Commit)
 - Clarified product positioning: “living documentation” with provider‑agnostic design — OpenAI first‑class, adaptable to Qwen/Qwen‑Code.
 - Public usage updated to `galiprandi/smart-doc@v1`.
 
+Behavior Update (This Commit)
+- Switch from direct pushes to a PR‑based update flow with auto‑merge on push events, improving compatibility with protected branches. Requires `pull-requests: write` permission.
+
 Quality Attributes
 - Safety: Workspace-write sandbox limits write scope to the repository.
 - Traceability: Diffs are embedded into the prompt for precise context.
-- Predictability: Push events auto-commit; PRs avoid writes to the target branch.
+- Predictability: Uses PRs for updates, respecting branch protection while enabling auto‑merge when permitted.
 
 Open Questions
 - TODO: Document Qwen/Qwen‑Code setup if adopted.
