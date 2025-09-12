@@ -7,3 +7,8 @@
 - Date: 2025-09-12
 - Scope: docs, entrypoint.sh
 - TL;DR: Updated docs to reflect removal of `CODEX_APPROVAL` and `--approval` usage; Codex CLI now relies on its default approval behavior while retaining `workspace-write` sandbox and `medium` reasoning effort.
+---
+- Title: Reposition Smart Doc + update usage
+- Date: 2025-09-12
+- Scope: docs (README, stack, architecture), action.yml
+- TL;DR: Updated documentation to reflect provider‑agnostic positioning (OpenAI first‑class, Qwen adaptable), clarified outputs (README, stack, architecture, modules), and aligned usage to `galiprandi/smart-doc@v1`.

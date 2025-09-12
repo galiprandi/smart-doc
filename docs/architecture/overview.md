@@ -11,8 +11,9 @@ Key Flow
 - Fallback to `npx -y @openai/codex` if local binaries aren’t present.
 - On push events, commit and push any doc changes; on PR events, skip pushing and optionally comment a summary.
 
-Notable Decision (This Commit)
-- Removed explicit approval handling: `CODEX_APPROVAL` env var and the `--approval` CLI flag were deleted. Approval behavior now follows the Codex CLI default when invoking `exec`.
+Positioning Update (This Commit)
+- Clarified product positioning: “living documentation” with provider‑agnostic design — OpenAI first‑class, adaptable to Qwen/Qwen‑Code.
+- Public usage updated to `galiprandi/smart-doc@v1`.
 
 Quality Attributes
 - Safety: Workspace-write sandbox limits write scope to the repository.
@@ -20,5 +21,5 @@ Quality Attributes
 - Predictability: Push events auto-commit; PRs avoid writes to the target branch.
 
 Open Questions
-- TODO: Clarify the Codex CLI default approval mode when `--approval` is omitted and document any ways to configure it if needed.
-
+- TODO: Document Qwen/Qwen‑Code setup if adopted.
+- TODO: Clarify Codex CLI default approval mode when `--approval` is omitted and how to override it if needed.

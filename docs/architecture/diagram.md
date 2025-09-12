@@ -25,5 +25,10 @@ flowchart TD
       Removed:
       - CODEX_APPROVAL / --approval flag
     end note
-```
 
+    note left of GH
+      Provider compatibility:
+      - Primary: OpenAI (Codex/GPT‑5)
+      - Adaptable: Qwen/Qwen‑Code (optional)
+    end note
+```
