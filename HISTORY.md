@@ -2,3 +2,8 @@
 - Fecha: 2025-09-12
 - Alcance (Scope): Documentación de alto nivel, diagramas y módulos
 - TL;DR: Se generan y actualizan archivos de documentación en docs/ para reflejar cambios en entrypoint.sh y aumentar la visibilidad de la arquitectura y módulos. Se dejan TODOs para completar detalles tras la revisión del diff.
+---
+- Title: Remove explicit Codex approval flag
+- Date: 2025-09-12
+- Scope: docs, entrypoint.sh
+- TL;DR: Updated docs to reflect removal of `CODEX_APPROVAL` and `--approval` usage; Codex CLI now relies on its default approval behavior while retaining `workspace-write` sandbox and `medium` reasoning effort.
