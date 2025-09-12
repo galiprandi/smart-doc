@@ -16,6 +16,10 @@ INPUT_JIRA_HOST=${INPUT_JIRA_HOST:-}
 INPUT_JIRA_EMAIL=${INPUT_JIRA_EMAIL:-}
 INPUT_JIRA_API_TOKEN=${INPUT_JIRA_API_TOKEN:-}
 INPUT_CLICKUP_TOKEN=${INPUT_CLICKUP_TOKEN:-}
+INPUT_MERGE_MODE=${INPUT_MERGE_MODE:-auto}
+INPUT_MERGE_WAIT_SECONDS=${INPUT_MERGE_WAIT_SECONDS:-10}
+INPUT_MERGE_MAX_ATTEMPTS=${INPUT_MERGE_MAX_ATTEMPTS:-30}
+INPUT_READY_PR_IF_DRAFT=${INPUT_READY_PR_IF_DRAFT:-true}
 
 ## Auth mapping: only SMART_DOC_API_TOKEN is supported (maps to OPENAI_API_KEY)
 if [[ -n "${OPENAI_API_KEY:-}" && -n "$INPUT_SMART_DOC_API_TOKEN" && "$OPENAI_API_KEY" != "$INPUT_SMART_DOC_API_TOKEN" ]]; then
@@ -271,6 +275,73 @@ else
   fi
 fi
 
+# ---- Resilience: PR readiness and merge orchestration ----
+pr_field() { gh pr view "$1" --repo "$REPO_SLUG" --json "$2" -q ".$2" 2>/dev/null || echo ""; }
+
+ensure_pr_ready() {
+  local url="$1"
+  if [[ "${INPUT_READY_PR_IF_DRAFT,,}" == "true" ]]; then
+    local is_draft
+    is_draft=$(pr_field "$url" isDraft)
+    if [[ "$is_draft" == "true" ]]; then
+      warn "PR is draft; attempting to mark as ready for review."
+      gh pr ready "$url" --repo "$REPO_SLUG" >/dev/null 2>&1 || true
+    fi
+  fi
+}
+
+wait_until_mergeable() {
+  local url="$1"; local attempts=${INPUT_MERGE_MAX_ATTEMPTS}; local sleep_s=${INPUT_MERGE_WAIT_SECONDS}
+  for ((i=1; i<=attempts; i++)); do
+    local mergeable review state
+    mergeable=$(pr_field "$url" mergeable)
+    review=$(pr_field "$url" reviewDecision)
+    state=$(pr_field "$url" mergeStateStatus)
+    log "PR status attempt $i/$attempts: mergeable=${mergeable:-unknown}, review=${review:-unknown}, state=${state:-unknown}"
+    # Accept mergeable=="MERGEABLE" (GitHub GraphQL) or true (REST translation)
+    if [[ "$mergeable" == "MERGEABLE" || "$mergeable" == "true" ]]; then
+      echo "ready"; return 0
+    fi
+    sleep "$sleep_s"
+  done
+  echo "not-ready"; return 1
+}
+
+attempt_merge() {
+  local url="$1"
+  local mode="${INPUT_MERGE_MODE}"
+  case "${mode}" in
+    auto|AUTO)
+      if gh pr merge --repo "$REPO_SLUG" --auto --squash "$url" >/dev/null 2>&1; then
+        log "Auto-merge queued successfully."
+        return 0
+      fi
+      warn "Auto-merge enqueue failed; will try immediate merge if permissible."
+      ;&
+    immediate|IMMEDIATE)
+      if [[ "$(wait_until_mergeable "$url")" == "ready" ]]; then
+        if gh pr merge --repo "$REPO_SLUG" --squash --delete-branch "$url" >/dev/null 2>&1; then
+          log "PR merged (squash)."
+          return 0
+        else
+          warn "Immediate merge failed despite mergeable status."
+        fi
+      else
+        warn "PR did not become mergeable within the allotted time."
+      fi
+      ;;
+    off|OFF)
+      log "Merge mode is 'off'; leaving PR open."
+      return 0
+      ;;
+    *)
+      warn "Unknown merge mode '${mode}', defaulting to 'auto'."
+      gh pr merge --repo "$REPO_SLUG" --auto --squash "$url" >/dev/null 2>&1 || true
+      ;;
+  esac
+  return 1
+}
+
 # Append SMART_TIMELINE.md entry in the PR branch and add a preview to PR body
 if [[ -n "$PR_URL" ]]; then
   pr_number="$(printf "%s" "$PR_URL" | sed -E 's#.*/pull/([0-9]+).*#\1#')"
@@ -326,7 +397,16 @@ fi
 
 # Try to enable auto-merge (squash); ignore if not permitted
 if [[ -n "$PR_URL" ]]; then
-  gh pr merge --repo "$REPO_SLUG" --auto --squash "$PR_URL" >/dev/null 2>&1 || warn "Auto-merge not enabled or failed."
+  ensure_pr_ready "$PR_URL"
+  if ! attempt_merge "$PR_URL"; then
+    # Final diagnostics
+    am_is_draft=$(gh pr view "$PR_URL" --json isDraft -q .isDraft 2>/dev/null || echo "")
+    am_review_decision=$(gh pr view "$PR_URL" --json reviewDecision -q .reviewDecision 2>/dev/null || echo "")
+    am_mergeable=$(gh pr view "$PR_URL" --json mergeable -q .mergeable 2>/dev/null || echo "")
+    am_merge_state=$(gh pr view "$PR_URL" --json mergeStateStatus -q .mergeStateStatus 2>/dev/null || echo "")
+    am_auto_req=$(gh pr view "$PR_URL" --json autoMergeRequest -q .autoMergeRequest.enabledAt 2>/dev/null || echo "")
+    warn "Auto-merge/immediate merge not completed. Details: isDraft=${am_is_draft:-unknown}, reviewDecision=${am_review_decision:-unknown}, mergeable=${am_mergeable:-unknown}, mergeStateStatus=${am_merge_state:-unknown}, autoMergeRequest=${am_auto_req:-none}."
+  fi
 fi
 
 log "Smart Doc completed (branch: $UPDATE_BRANCH${PR_URL:+, PR: $PR_URL})."
