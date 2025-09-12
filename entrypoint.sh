@@ -226,11 +226,24 @@ TARGET_BRANCH="${INPUT_BRANCH:-main}"
 UPDATE_BRANCH="smart-doc/docs-update-${SHORT_SHA}"
 
 log "Creating update branch: $UPDATE_BRANCH (target: $TARGET_BRANCH)"
-git switch -c "$UPDATE_BRANCH" || git checkout -b "$UPDATE_BRANCH"
+# Ensure we have the latest refs from origin and base our update branch on remote if it exists
+git fetch --prune origin || true
+if git rev-parse --verify "origin/$UPDATE_BRANCH" >/dev/null 2>&1; then
+  # Create/reset local branch to track the remote update branch tip
+  git checkout -B "$UPDATE_BRANCH" "origin/$UPDATE_BRANCH"
+else
+  git switch -c "$UPDATE_BRANCH" || git checkout -b "$UPDATE_BRANCH"
+fi
 
 if ! git push -u origin "$UPDATE_BRANCH"; then
-  warn "Failed to push update branch. Exiting without PR creation."
-  exit 0
+  warn "Initial push failed (likely non fast-forward). Attempting force-with-lease..."
+  git fetch origin "$UPDATE_BRANCH" || true
+  if git push -u --force-with-lease origin "$UPDATE_BRANCH"; then
+    log "Pushed with --force-with-lease."
+  else
+    warn "Failed to push update branch. Exiting without PR creation."
+    exit 0
+  fi
 fi
 
 # Create or reuse PR (ensure gh auth and explicit repo)
