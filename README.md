@@ -2,7 +2,7 @@
 
 # Smart Doc — Living documentation for your repository
 
-Smart Doc keeps your documentation fresh automatically on every integration to `main`.
+Smart Doc keeps your documentation fresh automatically on every integration (main, develop, release, or PRs) — you choose the trigger.
 
 Benefits
 - Change‑driven updates: turns each commit diff into clear, useful docs under `docs/` (and optionally `HISTORY.md`).
@@ -17,7 +17,7 @@ Why Smart Doc
 - Scales with you: from single repos to large monorepos.
 
 How it works (at a glance)
-- On changes to `main`, Smart Doc:
+- On your chosen trigger (e.g., merges to `main` or `develop`, or PRs), Smart Doc:
   - Detects changed files and unified diffs.
   - Updates or creates pages in `docs/` with explanations and diagrams (English, change‑only).
   - Opens an auto‑merge Pull Request to `main` with the generated docs — perfect for protected branches.
@@ -27,7 +27,7 @@ Minimal setup
 - One secret: `SMART_DOC_API_TOKEN` (your API key; exported as `OPENAI_API_KEY`).
 - A simple workflow pointing to this Action.
 
-Minimal workflow example
+Minimal workflow example (main and PRs)
 ```yaml
 name: Smart Doc
 on:
@@ -39,9 +39,9 @@ on:
   pull_request:
     branches: [ main ]
 
-permissions:
-  contents: write
-  pull-requests: write
+concurrency:
+  group: smart-doc-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   update-docs:
@@ -65,10 +65,6 @@ jobs:
           generate_history: 'true'
           # Optional: custom prompt
           # prompt_template: prompts/default.md
-
-permissions:
-  contents: write
-  pull-requests: write
 ```
 
 Model compatibility
@@ -84,3 +80,22 @@ License
 MIT
 
 <!-- chore: trigger Smart Doc PR flow test -->
+
+Customize triggers (GitFlow, release branches, PR-only)
+```yaml
+on:
+  push:
+    branches:
+      - develop         # GitFlow
+      - release/*       # release branches
+      - main            # trunk/main
+    paths-ignore:
+      - 'docs/**'
+      - 'HISTORY.md'
+  pull_request:
+    branches: [ main, develop ]
+
+concurrency:
+  group: smart-doc-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+```
