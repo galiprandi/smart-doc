@@ -184,3 +184,5 @@ jobs:
           docs_folder: docs
           generate_history: 'true'
 ```
+
+force push
