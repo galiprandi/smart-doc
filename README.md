@@ -1,21 +1,33 @@
 [![Smart Doc](https://github.com/galiprandi/smart-doc/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/galiprandi/smart-doc/actions/workflows/test.yml)
 
-# Smart Doc — Auto-document your code with Qwen-Code
+# Smart Doc — Living documentation for your repository
 
-Smart Doc is a simple composite GitHub Action that analyzes code changes and updates documentation under `docs/`, optionally enriching it with ticket context and generating `HISTORY.md` in the repo root.
+Smart Doc keeps your documentation fresh automatically on every integration to `main`.
 
-Key points
-- Composite action (Bash): minimal and maintainable.
-- Uses OpenAI Codex CLI (`@openai/codex`) via `code exec` con un prompt estructurado. No fuerza escrituras si no hay salida útil.
-- MCP (Jira/ClickUp) opcional (no requerido para Codex).
+Benefits
+- Change‑driven updates: turns each commit diff into clear, useful docs under `docs/` (and optionally `HISTORY.md`).
+- Architecture and modules, minus the friction: generates concise summaries, Mermaid diagrams, and per‑module pages when relevant.
+- Zero manual effort: runs as a GitHub Action on every push or PR; pushes commits on `main`, never on PRs.
+- Flexible by design: works with any stack. Built for OpenAI (Codex/GPT‑5) and easy to adapt for Qwen/Qwen‑Code.
 
-Usage
-1) Add auth secret for Qwen-Code.
-   - SMART_DOC_API_TOKEN = OPENAI_API_KEY. Put your OpenAI key in `SMART_DOC_API_TOKEN`; the action exports it as `OPENAI_API_KEY`.
-   - Do NOT define both `SMART_DOC_API_TOKEN` and `OPENAI_API_KEY`. The action will fail if both are set with different values.
-   - Where: `Settings` → `Secrets and variables` → `Actions` → `New repository secret`.
-2) Create workflow `.github/workflows/docs.yml`:
+Why Smart Doc
+- Reduce documentation debt: stop chasing stale READMEs and diagrams.
+- Faster onboarding: newcomers grasp “what changed” in minutes.
+- Stay focused: only touches docs related to the change, not the whole site.
+- Scales with you: from single repos to large monorepos.
 
+How it works (at a glance)
+- On merges to `main`, Smart Doc:
+  - Detects changed files and unified diffs.
+  - Updates or creates pages in `docs/` with explanations and diagrams.
+  - Commits the resulting documentation automatically.
+- On pull requests, you get a safe preview without pushing commits.
+
+Minimal setup
+- One secret: `SMART_DOC_API_TOKEN` (your API key; exported as `OPENAI_API_KEY`).
+- A simple workflow pointing to this Action.
+
+Minimal workflow example
 ```yaml
 name: Smart Doc
 on:
@@ -33,46 +45,24 @@ jobs:
           fetch-depth: 0
 
       - name: Smart Doc
-        uses: your-org/smart-doc@v1
+        uses: galiprandi/smart-doc@v1
         with:
           smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
           branch: main
           docs_folder: docs
           generate_history: 'true'
-          # Optional MCP integrations
-          # jira_host: ${{ secrets.JIRA_HOST }}
-          # jira_email: ${{ secrets.JIRA_EMAIL }}
-          # jira_api_token: ${{ secrets.JIRA_API_TOKEN }}
-          # clickup_token: ${{ secrets.CLICKUP_TOKEN }}
+          # Optional: custom prompt
+          # prompt_template: prompts/default.md
 ```
 
-Inputs
-- `smart_doc_api_token` (required): OpenAI API key alias. Mapped to `OPENAI_API_KEY`.
-- `branch` (default: `main`): reference branch for diffs.
-- `docs_folder` (default: `docs`): documentation directory; created if missing.
-- `prompt_template` (optional): path to custom prompt in repo.
-- `generate_history` (default: `true`): ensure `HISTORY.md` exists in root.
-- `model` (optional): override model (e.g., `gpt-5-nano`). Default: `gpt-5-nano`.
-- Optional MCP: `jira_host`, `jira_email`, `jira_api_token`, `clickup_token`.
+Model compatibility
+- OpenAI (Codex/GPT‑5): first‑class support.
+- Qwen / Qwen‑Code: easily adaptable by configuring your model provider.
 
-How it works
-- Computes changed files using GitHub API via `gh api repos/<owner>/<repo>/compare/<base>...<head>`.
-- Builds the prompt (custom or default) and appends changed files context.
-- Executes `code exec "<prompt>"`; si el agente modifica archivos, se detectan y se commitean en push a main. En PR no se hace push.
-
-Notes on MCP
-- MCP (Model Context Protocol) refers to external context providers the agent can query (e.g., Jira/ClickUp). This action only creates `~/.qwen/settings.json` if the related secrets are provided; otherwise it skips MCP entirely.
-
-Secrets
-- Required:
-  - `SMART_DOC_API_TOKEN`: Put your OpenAI API key here (this action exports it as `OPENAI_API_KEY`). Do not also set `OPENAI_API_KEY`.
-- Optional (only if you want ticket enrichment):
-  - `JIRA_HOST` (e.g., `https://your-company.atlassian.net`)
-  - `JIRA_EMAIL`
-  - `JIRA_API_TOKEN`
-  - `CLICKUP_TOKEN`
+FAQ
+- Does it overwrite everything? No. It only updates documentation tied to the current commit’s diff.
+- Does it generate diagrams? Yes, Mermaid diagrams that stay consistent with the changes.
+- Does it run on PRs? Yes, without pushing commits; on `main` it commits changes automatically.
 
 License
 MIT
-
-Test note: Triggering Smart Doc via a minimal change (v9).
