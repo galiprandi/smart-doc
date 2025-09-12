@@ -156,7 +156,21 @@ openai_generate() {
 }
 
 log "Running Smart Doc with OpenAI Codex CLI..."
-if ! code exec "$(cat "$PROMPT_FILE")"; then
+run_codex() {
+  local prompt
+  prompt="$(cat "$PROMPT_FILE")"
+  set +e
+  if command -v code >/dev/null 2>&1; then
+    code exec "$prompt" && return 0
+  fi
+  if command -v codex >/dev/null 2>&1; then
+    codex exec "$prompt" && return 0
+  fi
+  npx -y @openai/codex exec "$prompt" && return 0
+  set -e
+  return 1
+}
+if ! run_codex; then
   warn "Codex CLI execution failed; no changes will be made."
 fi
 
