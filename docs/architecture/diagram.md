@@ -15,11 +15,18 @@ flowchart TD
     J[gh pr create --repo <slug>]
     K{PR created?}
     L[gh pr list --repo <slug>]
-    M[gh pr merge --repo <slug> --auto --squash]
+    R[If draft and enabled -> gh pr ready]
+    X{merge_mode}
+    M[auto -> gh pr merge --auto --squash]
+    N[immediate -> wait until mergeable]
+    O[gh pr merge --squash --delete-branch]
+    P[off -> leave PR open]
   end
 
   G --> H --> I --> J --> K
-  K -- no --> L --> M
-  K -- yes --> M
+  K -- no --> L --> R --> X
+  K -- yes --> R --> X
+  X -- auto --> M
+  X -- immediate --> N --> O
+  X -- off --> P
 ```
-

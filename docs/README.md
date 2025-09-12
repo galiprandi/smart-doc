@@ -7,7 +7,11 @@ Purpose
 What changed in this update
 - GitHub CLI auth is bootstrapped using `GH_TOKEN` (preferred when provided) or `GITHUB_TOKEN`.
 - PR operations explicitly pass `--repo <owner/repo>` to `gh` for reliability.
-- PR merge step also uses `--repo`; warnings improved when tokens/permissions are missing.
+- PR readiness and merge orchestration added:
+  - Convert draft PRs to ready when `ready_pr_if_draft: true`.
+  - Merge modes via inputs: `merge_mode: auto | immediate | off`.
+  - Polling controls for mergeability: `merge_wait_seconds`, `merge_max_attempts`.
+  - Still uses `--repo` and logs clearer diagnostics when merge cannot proceed.
 
 Quickstart
 - Secret: `SMART_DOC_API_TOKEN` (exported to `OPENAI_API_KEY`).
@@ -20,7 +24,10 @@ Quickstart
 Runtime behavior (relevant parts)
 - Creates branch `smart-doc/docs-update-<short-sha>` and pushes it.
 - Creates or reuses a PR targeting `branch` (default `main`) using `gh pr create --repo <slug>`.
-- Attempts auto‑merge (squash) via `gh pr merge --repo <slug> --auto --squash` when allowed.
+- Ensures PR is ready (optionally converts draft), then merges based on `merge_mode`:
+  - `auto`: queue auto‑merge (squash) when allowed.
+  - `immediate`: poll until mergeable, then squash‑merge and delete branch.
+  - `off`: leave PR open.
 
 Folder structure (docs)
 - `docs/README.md` — this page.
@@ -28,4 +35,3 @@ Folder structure (docs)
 - `docs/architecture/overview.md` — flow and decisions.
 - `docs/architecture/diagram.md` — Mermaid overview.
 - `docs/modules/entrypoint.md` — `entrypoint.sh` responsibilities and interfaces.
-

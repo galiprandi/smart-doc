@@ -15,3 +15,8 @@ Environment requirements
 - GitHub‑hosted runner with `gh`, `git`, `jq`, `curl`, and `bash` available.
 - Network access to GitHub API and OpenAI API.
 
+Action inputs (merge orchestration)
+- `merge_mode` (default `auto`): `auto` | `immediate` | `off`.
+- `merge_wait_seconds` (default `10`): poll interval for mergeability checks.
+- `merge_max_attempts` (default `30`): max polling attempts.
+- `ready_pr_if_draft` (default `true`): mark draft PR ready before merging.
