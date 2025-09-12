@@ -2,7 +2,8 @@ Mermaid Diagram
 
 ```mermaid
 flowchart TD
-    GH[GitHub Action Runtime]
+    GH[GitHub Actions Trigger]
+    CG[Concurrency Gate\n group: smart-doc-${{ github.workflow }}-${{ github.ref }}\n cancel-in-progress: true]
     EP[entrypoint.sh]
     PROMPT[Build Prompt + Diffs]
     CODEBIN{Codex Binary Available?}
@@ -12,7 +13,7 @@ flowchart TD
     DOCS[Write docs under docs/]
     GIT[(git add/commit/push on push events)]
 
-    GH --> EP --> PROMPT --> CODEBIN
+    GH --> CG --> EP --> PROMPT --> CODEBIN
     CODEBIN -->|VSCode code| CODE --> DOCS
     CODEBIN -->|codex| CODEX --> DOCS
     CODEBIN -->|fallback| NPX --> DOCS
@@ -30,5 +31,11 @@ flowchart TD
       Provider compatibility:
       - Primary: OpenAI (Codex/GPT‑5)
       - Adaptable: Qwen/Qwen‑Code (optional)
+    end note
+
+    note right of CG
+      Prevents overlapping runs for the
+      same workflow + ref by
+      cancelling in-progress jobs.
     end note
 ```

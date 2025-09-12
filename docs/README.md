@@ -7,18 +7,25 @@ This Commit
 - Updated positioning: living documentation, provider‑agnostic with OpenAI first‑class and adaptable to Qwen/Qwen‑Code.
 - Usage example now references `galiprandi/smart-doc@v1`.
 - Action description clarified to include README, stack, architecture, and modules as target outputs.
+ - CI: Documented configurable triggers (main/develop/release/*/PRs) and added a concurrency group that cancels in‑progress runs.
 
 Quickstart
-- Trigger: Runs on push/PR via GitHub Actions.
+- Trigger: Customizable via GitHub Actions (main, develop, release/*, PRs).
 - Auth: Set `SMART_DOC_API_TOKEN` (exported as `OPENAI_API_KEY`).
 - Output: Writes docs in `docs/`. Pushes commits on `main`; PRs do not push.
 
-Minimal workflow
+Minimal workflow (main and PRs)
 ```yaml
 name: Smart Doc
 on:
   push:
-    branches: [main]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: smart-doc-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   update-docs:
@@ -37,6 +44,25 @@ jobs:
           generate_history: 'true'
           # Optional: custom prompt
           # prompt_template: prompts/default.md
+```
+
+Customize triggers (GitFlow, release branches, PR‑only)
+```yaml
+on:
+  push:
+    branches:
+      - develop         # GitFlow
+      - release/*       # release branches
+      - main            # trunk/main
+    paths-ignore:
+      - 'docs/**'
+      - 'HISTORY.md'
+  pull_request:
+    branches: [ main, develop ]
+
+concurrency:
+  group: smart-doc-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 ```
 
 Common Commands

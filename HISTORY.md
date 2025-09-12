@@ -22,3 +22,8 @@
 - Date: 2025-09-12
 - Scope: README
 - TL;DR: Added a no-op HTML comment to README to exercise PR flow; no functional changes.
+
+## Document CI concurrency and flexible triggers
+- Date: 2025-09-12
+- Scope: docs (README, stack, architecture), workflows
+- TL;DR: Added GitHub Actions `concurrency` example (cancel in-progress) and documented customizable triggers (main/develop/release/*/PRs); aligned examples with updated workflow.

@@ -27,6 +27,11 @@ Provider Compatibility
 Build/Test Tooling
 - GitHub Actions runtime executes `entrypoint.sh`.
 - Git stages/commits/pushes generated docs on push events; PRs skip push.
+ - Concurrency: `concurrency.group = smart-doc-${{ github.workflow }}-${{ github.ref }}` with `cancel-in-progress: true` to prevent overlapping runs per ref/workflow.
+
+CI Triggers
+- Configurable: `main`, `develop`, `release/*`, and/or `pull_request`.
+- Optional: `paths-ignore` for `docs/**` and `HISTORY.md` to avoid feedback loops.
 
 Requirements
 - Runner tools: `gh`, `jq`, `git`, and at least one of `code`, `codex`, or `node + npx`.
