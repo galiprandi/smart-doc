@@ -1,8 +1,11 @@
-name: Test Smart Doc
+name: Smart Doc
 
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - 'docs/**'
+      - 'HISTORY.md'
   pull_request:
     branches: [ main ]
 
@@ -13,17 +16,20 @@ permissions:
 jobs:
   smart-doc:
     runs-on: ubuntu-latest
+    # Evita bucles si el commit fue generado por la propia action
+    if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, 'docs: update documentation via Smart Doc') }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Run Smart Doc (dry run)
+      - name: Run Smart Doc
         uses: ./
         with:
           smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
           branch: main
           docs_folder: docs
+          prompt_template: prompts/default.md
           generate_history: 'true'
           # jira_host: ${{ secrets.JIRA_HOST }}
           # jira_email: ${{ secrets.JIRA_EMAIL }}
