@@ -29,3 +29,11 @@
 - Tickets: 
 - Scope: docs/README.md
 - TL;DR: Update documentation based on this commit's diff (change-only, English).
+
+## Docs: README refresh + USAGE added
+- Date: 2025-09-12
+- PR: #TODO
+- Commit: TODO
+- Tickets: 
+- Scope: README.md, USAGE.md, docs/
+- TL;DR: README updated, USAGE.md added, and internal docs regenerated to reflect permissions and merge options.
