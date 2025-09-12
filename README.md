@@ -99,3 +99,33 @@ concurrency:
   group: smart-doc-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 ```
+
+PR-only workflow example (no pushes, safe previews)
+```yaml
+name: Smart Doc (PR only)
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+concurrency:
+  group: smart-doc-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Smart Doc
+        uses: galiprandi/smart-doc@v1
+        with:
+          smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
+          branch: main
+          docs_folder: docs
+          generate_history: 'true'
+          # Optional: custom prompt
+          # prompt_template: prompts/default.md
+```
