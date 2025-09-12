@@ -16,17 +16,15 @@ Smart Doc is a GitHub Action that turns each merge into precise, change‑only d
 2) Build a focused prompt and generate concise docs under `docs/` (English only). Optionally append to `SMART_TIMELINE.md`.
 3) Create/update `smart-doc/docs-update-<sha>` and open a PR; optionally auto‑merge when safe.
 
-### Pipeline (Mermaid)
+### How it integrates in your CI
 ```mermaid
 flowchart LR
-    A[Workflow trigger] --> B[validator.sh]
-    B --> C[diff-detector.sh]
-    C -->|tmp artifacts| D[prompt-builder.sh]
-    D -->|tmp/prompt.md| E[doc-updater.sh]
-    E -->|updates docs/ and SMART_TIMELINE.md| F{changes?}
-    F -- yes --> G[publisher.sh]
-    G --> H[Docs PR]
-    F -- no --> I[No-op]
+    Dev[Developer pushes code] --> CI[GitHub Actions]
+    CI --> SD[Run Smart Doc]
+    SD -->|Changes detected| PR[Open Docs PR]
+    SD -->|No meaningful changes| Skip[Skip]
+    PR --> Review[Review/Auto-merge]
+    Review --> Main[Docs updated on main]
 ```
 
 ## Requirements
