@@ -33,11 +33,23 @@ name: Smart Doc
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - 'docs/**'
+      - 'HISTORY.md'
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   update-docs:
+    if: >
+      ${{ github.event_name != 'push' || (
+            !startsWith(github.ref_name, 'smart-doc/docs-update-') &&
+            github.actor != 'github-actions[bot]'
+          ) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
