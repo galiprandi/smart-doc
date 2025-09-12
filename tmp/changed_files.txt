@@ -1,2 +1,0 @@
-scripts/diff-detector.sh
-scripts/doc-updater.sh
