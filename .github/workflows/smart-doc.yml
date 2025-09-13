@@ -50,39 +50,3 @@ jobs:
             docs/**
             SMART_TIMELINE.md
           if-no-files-found: warn
-
-      - name: Comment created/modified files (smart-doc via pulls.listFiles)
-        if: ${{ github.event_name == 'pull_request' }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          set -euo pipefail
-
-          FILE_LINES=$(gh api \
-            "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" \
-            --paginate | \
-            jq -r '.[] | select(.status=="added" or .status=="modified") | "- \"" + (if .status=="added" then "➕ added" else "✏️ modified" end) + "\": " + .filename')
-
-          TOTAL=$(printf "%s\n" "${FILE_LINES}" | grep -c '^-' || true)
-
-          if [[ -n "${FILE_LINES}" ]]; then
-            {
-              echo "📚 Smart Doc — change-only docs from your diffs"
-              echo
-              echo "The following documentation files were added or updated (${TOTAL}):"
-              echo "${FILE_LINES}"
-              echo
-              echo "🔍 Source: pulls.listFiles"
-              echo
-              echo "✅ Keep shipping — we’ll handle the docs. Powered by Smart Doc."
-            } > /tmp/smart-doc-comment.md
-          else
-            {
-              echo "ℹ️ No documentation changes detected in this run."
-              echo
-              echo "✅ Keep shipping — we’ll handle the docs. Powered by Smart Doc."
-            } > /tmp/smart-doc-comment.md
-          fi
-
-          gh pr comment "$PR_NUMBER" --body-file /tmp/smart-doc-comment.md
