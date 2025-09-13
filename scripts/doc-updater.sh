@@ -38,21 +38,28 @@ before=$(git status --porcelain -- "$INPUT_DOCS_FOLDER" SMART_TIMELINE.md 2>/dev
 # Run Codex CLI in workspace-write mode
 export CODEX_SANDBOX="workspace-write"
 export CODEX_REASONING_EFFORT="medium"
+# Hint model selection for clients that read OPENAI_MODEL
+export OPENAI_MODEL="$MODEL"
 log "Running using model $MODEL"
 set +e
+CODEX_LOG="$TMP_DIR/codex.log"
+: > "$CODEX_LOG"
 if command -v code >/dev/null 2>&1; then
-  code exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" & > /dev/null
+  code exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
   rc=$?
 elif command -v codex >/dev/null 2>&1; then
-  codex exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" & > /dev/null
+  codex exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
   rc=$?
 else
-  npx -y @openai/codex exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" & > /dev/null
+  npx -y @openai/codex exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
   rc=$?
 fi
 set -e
 if [[ $rc -ne 0 ]]; then
-  warn "Codex CLI execution failed or returned non-zero ($rc)."
+  warn "Codex CLI execution failed or returned non-zero ($rc). See $CODEX_LOG for details."
+  if grep -q "401 Unauthorized" "$CODEX_LOG" 2>/dev/null; then
+    warn "Codex reported 401 Unauthorized. Verify INPUT_SMART_DOC_API_TOKEN/OPENAI_API_KEY has access to the selected model."
+  fi
 fi
 
 # Snapshot after
