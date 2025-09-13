@@ -21,6 +21,9 @@ PROMPT_FILE=${PROMPT_FILE:-tmp/prompt.md}
 MODEL=${INPUT_MODEL:-gpt-5-nano}
 
 # Prepare tmp dir and flag
+# Hint model selection for clients that read env vars
+export OPENAI_MODEL="$MODEL"
+export CODEX_MODEL="$MODEL"
 TMP_DIR="tmp"
 mkdir -p "$TMP_DIR"
 CHANGES_FLAG="$TMP_DIR/have_changes.flag"
@@ -38,20 +41,41 @@ before=$(git status --porcelain -- "$INPUT_DOCS_FOLDER" SMART_TIMELINE.md 2>/dev
 # Run Codex CLI in workspace-write mode
 export CODEX_SANDBOX="workspace-write"
 export CODEX_REASONING_EFFORT="medium"
-# Hint model selection for clients that read OPENAI_MODEL
-export OPENAI_MODEL="$MODEL"
 log "Running using model $MODEL"
+
+# Build optional --model flag if supported by the installed CLI
+build_model_args() {
+  local cmd="$1"
+  if "$cmd" exec --help 2>/dev/null | grep -q -- "--model"; then
+    printf -- "--model\n%s\n" "$MODEL"
+  fi
+}
+
 set +e
 CODEX_LOG="$TMP_DIR/codex.log"
 : > "$CODEX_LOG"
 if command -v code >/dev/null 2>&1; then
-  code exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
+  mapfile -t MODEL_ARGS < <(build_model_args code)
+  if [[ ${#MODEL_ARGS[@]} -gt 0 ]]; then
+    code exec --sandbox "$CODEX_SANDBOX" "${MODEL_ARGS[@]}" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
+  else
+    code exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
+  fi
   rc=$?
 elif command -v codex >/dev/null 2>&1; then
-  codex exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
+  mapfile -t MODEL_ARGS < <(build_model_args codex)
+  if [[ ${#MODEL_ARGS[@]} -gt 0 ]]; then
+    codex exec --sandbox "$CODEX_SANDBOX" "${MODEL_ARGS[@]}" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
+  else
+    codex exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
+  fi
   rc=$?
 else
-  npx -y @openai/codex exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
+  if npx -y @openai/codex exec --help 2>/dev/null | grep -q -- "--model"; then
+    npx -y @openai/codex exec --sandbox "$CODEX_SANDBOX" --model "$MODEL" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
+  else
+    npx -y @openai/codex exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
+  fi
   rc=$?
 fi
 set -e
