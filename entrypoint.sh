@@ -47,4 +47,9 @@ PROMPT_FILE="$PROMPT_FILE" bash "${GITHUB_ACTION_PATH:-.}/scripts/doc-updater.sh
 ## 5) Publish PR if changes and event is push
 bash "${GITHUB_ACTION_PATH:-.}/scripts/publisher.sh"
 
+## 6) Post PR comment (on pull_request events)
+if [[ "${GITHUB_EVENT_NAME:-}" == "pull_request" ]]; then
+  bash "${GITHUB_ACTION_PATH:-.}/scripts/post-pr-comment.sh"
+fi
+
 log "Smart Doc completed (publish handled by publisher.sh)."
