@@ -78,6 +78,12 @@ See [`USAGE.md`](./USAGE.md) for:
 - PAT vs `GITHUB_TOKEN`, merge modes, and troubleshooting
 
 ## Model compatibility
+
+## Model selection
+- Default model: `gpt-5-nano` (fast and cost‑effective).
+- Override via workflow input: `with: model: gpt-4o-mini` (or any accessible model for your key).
+- The Action passes the model explicitly to the CLI (`--model <id>` when supported) and also exports `OPENAI_MODEL` and `CODEX_MODEL` for env‑based clients.
+- If you see `401 Unauthorized`, your API key likely lacks access to the selected model.
 - OpenAI (Codex / GPT‑5): first‑class
 - Qwen / Qwen‑Code: configurable
 
