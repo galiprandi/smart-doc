@@ -61,7 +61,7 @@ command = "node"
 args = ["/path/to/jira-server/build/index.js"]
 env = { "JIRA_EMAIL" = "${JIRA_EMAIL}", "JIRA_API_TOKEN" = "${JIRA_API_TOKEN}", "JIRA_DOMAIN" = "${JIRA_DOMAIN}" }
 EOF
-  log "Jira MCP configured at ${CODEX_HOME}/config.toml"
+  log "⚙️ Jira MCP configured at ${CODEX_HOME}/config.toml"
 fi
 
 exit 0

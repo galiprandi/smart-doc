@@ -37,6 +37,13 @@ Inputs and Secrets
 - Configurable inputs (see `action.yml`): `branch`, `docs_folder`, `prompt_template`, `model`, `generate_history`. Advanced: `INPUT_INCLUDE_WORKING` and `INPUT_PATCH_FILE` (diff injection) for previews/tests.
 - GitHub CLI (`gh`) and `GITHUB_TOKEN` are used for opening PRs. The diff detector prefers local git; `gh compare` is optional.
 
+Jira MCP (optional, auto-configured)
+- If the environment variables `JIRA_EMAIL`, `JIRA_API_TOKEN`, and `JIRA_DOMAIN` are present and non-empty, `scripts/validator.sh` will create (or overwrite) `~/.codex/config.toml` with a Jira MCP server configuration:
+  - `[mcp_servers.jira]`, `command = "node"`, `args = ["/path/to/jira-server/build/index.js"]` and an `env` block containing the three variables.
+- On success, the validator logs: `⚙️ Jira MCP configured at ~/.codex/config.toml`.
+- If any variable is missing or empty, the validator performs no MCP action and prints nothing about MCP.
+- This configuration is written to the user home (not the repository) and can be consumed by Codex or compatible MCP clients.
+
 Agent Guardrails
 - Do: keep README marketing‑focused, in English, and synchronized with real behavior (auto‑merge PR, permissions, anti‑loop, concurrency).
 - Do: preserve `entrypoint.sh` safety patterns (set -euo pipefail; minimal, readable Bash).
