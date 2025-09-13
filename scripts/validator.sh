@@ -49,4 +49,19 @@ fi
 # Docs folder (ensure exists later by entrypoint; here we just log)
 log "Docs folder target: $INPUT_DOCS_FOLDER"
 
+# Jira MCP auto-configuration
+# If JIRA_EMAIL, JIRA_API_TOKEN, and JIRA_DOMAIN are all set (non-empty),
+# write ~/.codex/config.toml with the Jira MCP server configuration.
+if [[ -n "${JIRA_EMAIL:-}" && -n "${JIRA_API_TOKEN:-}" && -n "${JIRA_DOMAIN:-}" ]]; then
+  CODEX_HOME="${HOME}/.codex"
+  mkdir -p "${CODEX_HOME}"
+  cat > "${CODEX_HOME}/config.toml" <<EOF
+[mcp_servers.jira]
+command = "node"
+args = ["/path/to/jira-server/build/index.js"]
+env = { "JIRA_EMAIL" = "${JIRA_EMAIL}", "JIRA_API_TOKEN" = "${JIRA_API_TOKEN}", "JIRA_DOMAIN" = "${JIRA_DOMAIN}" }
+EOF
+  log "Jira MCP configured at ${CODEX_HOME}/config.toml"
+fi
+
 exit 0
