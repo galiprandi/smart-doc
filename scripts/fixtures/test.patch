@@ -37,7 +37,7 @@ index 0000000..2222222 100755
 @@
  set -euo pipefail
  
- log() { echo "✍️ [doc-updater] $*"; }
+ log() { echo "✍️  [doc-updater] $*"; }
  warn() { echo "::warning::⚠️ $*"; }
  err() { echo "::error::❌ $*"; }
  
