@@ -32,7 +32,6 @@ if [[ -z "${OPENAI_API_KEY:-}" ]]; then
   err "SMART_DOC_API_TOKEN is required (mapped to OPENAI_API_KEY)."
   exit 1
 fi
-log "API key present."
 
 # Tooling
 need_cmd() { command -v "$1" >/dev/null 2>&1 || { warn "Missing optional dependency: $1"; return 1; }; }
@@ -47,7 +46,6 @@ if [[ -n "$INPUT_PROMPT_TEMPLATE" && ! -f "$INPUT_PROMPT_TEMPLATE" ]]; then
 fi
 
 # Docs folder (ensure exists later by entrypoint; here we just log)
-log "Docs folder target: $INPUT_DOCS_FOLDER"
 
 # Jira MCP auto-configuration
 # If JIRA_EMAIL, JIRA_API_TOKEN, and JIRA_DOMAIN are all set (non-empty),
