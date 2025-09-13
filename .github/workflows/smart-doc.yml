@@ -62,22 +62,26 @@ jobs:
           FILE_LINES=$(gh api \
             "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" \
             --paginate | \
-            jq -r '.[] | select(.status=="added" or .status=="modified") | "- \(.status): \(.filename)"')
+            jq -r '.[] | select(.status=="added" or .status=="modified") | "- \"" + (if .status=="added" then "➕ added" else "✏️ modified" end) + "\": " + .filename')
+
+          TOTAL=$(printf "%s\n" "${FILE_LINES}" | grep -c '^-' || true)
 
           if [[ -n "${FILE_LINES}" ]]; then
             {
-              echo "🚀 Documentation update by the smart-doc Action"
+              echo "📚 Smart Doc — change-only docs from your diffs"
               echo
-              echo "The following files were created or updated:"
+              echo "The following documentation files were added or updated (${TOTAL}):"
               echo "${FILE_LINES}"
               echo
-              echo "✅ Powered by the smart-doc GitHub Action — automate your docs with confidence."
+              echo "🔍 Source: pulls.listFiles"
+              echo
+              echo "✅ Keep shipping — we’ll handle the docs. Powered by Smart Doc."
             } > /tmp/smart-doc-comment.md
           else
             {
-              echo "ℹ️ No documentation files were created or modified in this run."
+              echo "ℹ️ No documentation changes detected in this run."
               echo
-              echo "✅ Powered by the smart-doc GitHub Action — automate your docs with confidence."
+              echo "✅ Keep shipping — we’ll handle the docs. Powered by Smart Doc."
             } > /tmp/smart-doc-comment.md
           fi
 
