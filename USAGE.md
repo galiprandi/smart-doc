@@ -238,3 +238,15 @@ with:
 ## Notes
 - Smart Doc writes only under `docs/` (English) and optionally appends `SMART_TIMELINE.md`.
 - It never pushes directly to protected branches; it opens a PR instead.
+
+## Choosing a model
+- Default: `gpt-5-nano` (cheap/fast). Override with the `model` input.
+- The Action passes `--model` to the CLI when supported and exports `OPENAI_MODEL` and `CODEX_MODEL`.
+- Errors `401 Unauthorized` usually mean your API key lacks access to the chosen model.
+
+Example override:
+```yaml
+with:
+  smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
+  model: gpt-4o-mini
+```
