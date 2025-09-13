@@ -93,15 +93,21 @@ Smart Timeline (repository change list)
 - File: `SMART_TIMELINE.md` at the repo root. Language: English only.
 - Ordering: reverse chronological by date (most recent first). Insert each new entry in the correct position by date.
 - One entry per relevant change (merge or release). Keep entries concise and scannable.
-- Required fields per entry (exact text keys, no extra prose):
+- Fields per entry (include only when confidently available; never fabricate):
   - Title: <concise-title>
-  - Merge: <short-sha> <link-if-known>
+  - Merge commit: <sha>
   - Scope: <areas/modules or file paths>
   - TL;DR: <one-sentence summary>
-- Optional fields (include only when reliably available from this commit/PR context):
   - Author: <name>
-  - Jira: <KEY-1>, <KEY-2>
-  - ClickUp: <ID-1>, <ID-2>
-- Link rules: if the base repository URL is known, use `https://<host>/<org>/<repo>/commit/<sha>`; otherwise, include only the short-sha without a link.
+  - Jira: <KEY-1>, <KEY-2>  (If any Jira tickets are detected from branch, commit messages, PR metadata, or diff, always include them here. Do not fabricate.)
+  - ClickUp: <ID-1>, <ID-2>  (If any ClickUp tickets are detected, always include them here. Do not fabricate.)
 - Do not fabricate tickets or authors. Use data present in the diff/PR/commit message.
 - Spacing: separate entries with exactly one blank line. End the file with a single trailing newline. Do not add extra headings or horizontal rules.
+
+Inclusion rules (strict)
+- Include only values that you can extract or verify from the current diff, changed files list, commit messages, PR metadata, or other repository context provided in this prompt.
+- Do not infer or guess any values. If a field cannot be determined with high confidence, omit that field rather than inventing content.
+- Ticket keys (Jira/ClickUp): include them only when confidently detected. Do not expand descriptions unless those details are explicitly present in the provided context.
+
+Ticket inclusion rule
+- Whenever tickets (Jira, ClickUp or other ticketing system) are detected from branch name, recent commit messages, PR title/body, or the unified diff, you must add them to the Optional fields above for the corresponding Smart Timeline entry.
