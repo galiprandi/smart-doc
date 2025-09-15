@@ -94,7 +94,33 @@ if [[ -n "$after" && "$after" != "$before" ]]; then
   echo "yes" > "$CHANGES_FLAG"
 else
   log "No documentation changes detected."
-  echo "no" > "$CHANGES_FLAG"
+  # Cold-start baseline: if docs is empty and full_repo_when_missing_docs is enabled, create a minimal README
+  # This ensures first-run scaffolding so the publisher can persist something on cold start.
+  DOCS_EMPTY=true
+  if [[ -d "$INPUT_DOCS_FOLDER" ]]; then
+    # Count non-hidden files
+    count=$(find "$INPUT_DOCS_FOLDER" -type f -not -name ".*" | wc -l | tr -d '[:space:]')
+    [[ "$count" != "0" ]] && DOCS_EMPTY=false || true
+  fi
+  if [[ "${INPUT_FULL_REPO_WHEN_MISSING_DOCS:-}" == "true" && "$DOCS_EMPTY" == true ]]; then
+    log "Cold start detected (empty $INPUT_DOCS_FOLDER) with full_repo_when_missing_docs=true. Creating baseline README.md."
+    mkdir -p "$INPUT_DOCS_FOLDER"
+    {
+      echo "# Project Documentation"
+      echo "## Overview"
+      echo "Este repositorio usa Smart Doc para generar documentación automáticamente."
+      echo ""
+      echo "## Getting Started"
+      echo "- Estructura: docs/ contiene la documentación generada."
+      echo "- Primera ejecución (cold start): se crea esta base mínima."
+      echo ""
+      echo "## Endpoints / Módulos"
+      echo "Completar con información generada en próximas ejecuciones."
+    } > "$INPUT_DOCS_FOLDER/README.md"
+    echo "yes" > "$CHANGES_FLAG"
+  else
+    echo "no" > "$CHANGES_FLAG"
+  fi
 fi
 
 exit 0
