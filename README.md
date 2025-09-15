@@ -77,6 +77,10 @@ See [`USAGE.md`](./USAGE.md) for:
 - Monorepo `paths` and selective updates
 - PAT vs `GITHUB_TOKEN`, merge modes, and troubleshooting
 
+## Cold start baseline (optional)
+
+- If you enable `full_repo_when_missing_docs: true` and the `docs/` folder is empty, Smart Doc writes a minimal `docs/README.md` baseline on the first run. This guarantees a tangible artifact/commit for the first execution. Subsequent runs extend/replace this baseline based on diffs.
+
 ## Model compatibility
 
 ## Model selection

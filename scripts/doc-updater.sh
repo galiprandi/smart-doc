@@ -94,7 +94,81 @@ if [[ -n "$after" && "$after" != "$before" ]]; then
   echo "yes" > "$CHANGES_FLAG"
 else
   log "No documentation changes detected."
-  echo "no" > "$CHANGES_FLAG"
+  # Cold-start baseline: if docs is empty and full_repo_when_missing_docs is enabled, create a minimal README
+  # This ensures first-run scaffolding so the publisher can persist something on cold start.
+  DOCS_EMPTY=true
+  if [[ -d "$INPUT_DOCS_FOLDER" ]]; then
+    # Count non-hidden files
+    count=$(find "$INPUT_DOCS_FOLDER" -type f -not -name ".*" | wc -l | tr -d '[:space:]')
+    [[ "$count" != "0" ]] && DOCS_EMPTY=false || true
+  fi
+  if [[ "${INPUT_FULL_REPO_WHEN_MISSING_DOCS:-}" == "true" && "$DOCS_EMPTY" == true ]]; then
+    log "Cold start detected (empty $INPUT_DOCS_FOLDER) with full_repo_when_missing_docs=true. Creating initial documentation set."
+    mkdir -p "$INPUT_DOCS_FOLDER/architecture" "$INPUT_DOCS_FOLDER/modules"
+    # README.md
+    cat > "$INPUT_DOCS_FOLDER/README.md" << 'EOF'
+# Project Documentation
+
+## Overview
+This repository uses Smart Doc to generate documentation from code changes. This initial version is a cold‑start scaffold; subsequent runs will refine and expand it.
+
+## Quickstart
+- Install dependencies and run dev as described in the repository README.
+- Documentation lives under `docs/` and is kept up to date by Smart Doc.
+
+## Contents
+- Stack: key packages, commands, environments.
+- Architecture: high‑level overview and diagram.
+- Endpoints: public HTTP endpoints and health checks.
+EOF
+    # stack.md
+    cat > "$INPUT_DOCS_FOLDER/stack.md" << 'EOF'
+# Stack
+
+## Key Packages
+- List core frameworks and libraries here (filled by next Smart Doc runs).
+
+## Commands
+- Document `package.json` scripts and common tasks.
+
+## Environments
+- Describe environment variables and profiles.
+EOF
+    # architecture/overview.md
+    cat > "$INPUT_DOCS_FOLDER/architecture/overview.md" << 'EOF'
+# Architecture Overview
+
+## Goals
+- Summarize system goals and constraints.
+
+## Components
+- List services/modules and responsibilities.
+
+## Main Flow
+- Describe key request/event flows.
+EOF
+    # architecture/diagram.md
+    cat > "$INPUT_DOCS_FOLDER/architecture/diagram.md" << 'EOF'
+# Architecture Diagram
+
+```mermaid
+flowchart LR
+  Client --> API
+  API --> Queue
+  API --> DB
+```
+EOF
+    # endpoints.md
+    cat > "$INPUT_DOCS_FOLDER/endpoints.md" << 'EOF'
+# Endpoints
+
+- GET /health — Service liveness check.
+- Add other public endpoints here.
+EOF
+    echo "yes" > "$CHANGES_FLAG"
+  else
+    echo "no" > "$CHANGES_FLAG"
+  fi
 fi
 
 exit 0
