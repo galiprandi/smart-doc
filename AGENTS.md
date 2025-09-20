@@ -70,6 +70,14 @@ Consumption (for external users)
 - Recommended reference: `uses: galiprandi/smart-doc@v1` (stable tag created and released).
 - Example workflows in README include permissions and anti‑loop guards.
 
+Local Docker (Ubuntu) for development
+- A Dockerfile is provided to run Smart Doc’s doc generation in an Ubuntu environment where the CLI is stable.
+- Build:
+  - `docker build -t smart-doc-dev .`
+- Run (mounts repo and uses your API key):
+  - `docker run --rm -e OPENAI_API_KEY=$OPENAI_API_KEY -v "$PWD":/app smart-doc-dev bash scripts/dev-run-docs.sh --prompt prompts/default.md --docs-out docs-out --clean`
+- Outputs appear under `docs-out/` in your repo on the host.
+
 Prompt tuning tips (local)
 - Use diff injection to iterate the prompt without changing repo state:
   - `bash scripts/run-smart-doc-local.sh --patch scripts/fixtures/test.patch`
@@ -81,6 +89,31 @@ Testing/Validation
   - A branch `smart-doc/docs-update-<sha>` is created
   - A PR is opened with auto‑merge enabled when allowed
   - Docs are generated under `docs/` in English and scoped to the diff
+
+Local development helper
+- A helper script exists to exercise only the documentation generation step with arbitrary prompts, writing into an isolated folder and showing its tree at the end.
+- Script: `scripts/dev-run-docs.sh`
+- Usage:
+  - `bash scripts/dev-run-docs.sh --prompt <file.md> [--model <id>] [--docs-out <dir>] [--clean]`
+  - `bash scripts/dev-run-docs.sh --prompts-dir <dir> [--model <id>] [--docs-out <dir>] [--clean]`
+  - Defaults:
+    - `--model`: `gpt-5-nano`
+    - `--docs-out`: `docs-out` (timeline is colocated as `docs-out/SMART_TIMELINE.md`)
+    - `--clean`: when provided, removes the output folder before running
+  - Behavior:
+    - Runs only `scripts/doc-updater.sh` with the provided prompt; does not publish PRs or touch branches.
+    - Writes generated docs under `<docs-out>/docs/` and timeline at `<docs-out>/SMART_TIMELINE.md`.
+    - Prints a directory tree (or `find` fallback) of `<docs-out>` on completion.
+  - Examples:
+    - `bash scripts/dev-run-docs.sh --prompt prompts/default.md --clean`
+    - `bash scripts/dev-run-docs.sh --prompt prompts/default.md --docs-out my-eval --model gpt-4o-mini --clean`
+    - `bash scripts/dev-run-docs.sh --prompts-dir prompts --docs-out evals --clean`
+  - Requirements:
+    - Codex CLI available (`code`, `codex`, or `npx @openai/codex`).
+    - API key in `OPENAI_API_KEY` or `INPUT_SMART_DOC_API_TOKEN` for real generations; otherwise the script logs a warning and no docs will be changed.
+
+Robustness note
+- `scripts/doc-updater.sh` was hardened to avoid reliance on `mapfile` and to initialize CLI return handling, improving portability in local shells/macOS sandboxes.
 
 Appendix: Fallbacks and markers
 - The Action path does not rely on a Responses API fallback. If you are an external agent running in a read‑only environment, prefer returning a single patch (*** Begin Patch … *** End Patch) or explicit file markers to communicate changes; do not change this repository’s fallback behavior.

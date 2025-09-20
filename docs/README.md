@@ -1,31 +1,24 @@
-# Smart Doc — Internal Docs
+# Smart Doc Documentation
 
-## Overview
-Smart Doc generates concise, change-driven documentation from each commit’s diff. It writes only under `docs/` and can optionally append entries to `SMART_TIMELINE.md`. The Action is PR-first and respects protected branches.
+Purpose: Provide concise, change-oriented documentation for Smart Doc as it evolves.
 
-## What’s new in this update
-This commit refines internal scripts and adds small, documented hints:
+What’s here: explanation of how the diff-detector and doc-updater pieces affect documentation generation, plus quick pointers for contributors.
 
-- `scripts/diff-detector.sh`: ensures `tmp/changed_files.txt` and `tmp/patch.diff` are initialized and adds a TODO for a future `INPUT_MAX_FILES` threshold (non-blocking).
-- `scripts/doc-updater.sh`: clarifies model selection via `INPUT_MODEL` (default `gpt-5-nano`) and notes a future `--dry-run` flag at the LLM level.
+Quickstart (high level):
+- The Diff Detector identifies changed files and produces a patch.
+- The Doc Updater consumes a prompt built from the diff and generates docs under `docs/`.
+- Changes are published via PRs following anti-loop rules.
 
-## Quickstart
-- See the top-level [README](../README.md) for setup, inputs, and workflow examples.
-- Canonical generation rules live in [prompts/default.md](../prompts/default.md).
+Folder structure (high level):
+- `docs/` – generated and authored docs for the project.
+- `docs/architecture/` – architecture overview materials.
+- `docs/modules/` – per-module documentation files touched by changes.
+- `SMART_TIMELINE.md` – repository-wide change timeline.
 
-## Change gating
-To reduce churn and noise, Smart Doc applies strict change gating:
-- Only update docs when the improvement is meaningful (clarifies behavior, fixes inaccuracies, or documents new/changed components).
-- Skip micro-edits and cosmetic changes that don’t materially improve understanding.
-- If nothing meets the bar, do not write files or open a PR.
+Common commands (local):
+- Run a local doc-generation flow: see `scripts/dev-run-docs.sh`.
+- Inspect docs folder: `ls -la docs/`.
 
-## Documentation conventions
-Follow the Semantic Markdown requirements defined in [prompts/default.md](../prompts/default.md) (English, one H1 per file, logical sections, fenced code blocks with language tags, single trailing newline).
+Internal links:
+- See `docs/README.md` for overview and quicklinks.
 
-## Current docs
-- `docs/README.md` — this page.
-- `SMART_TIMELINE.md` — append-only change list at the repo root.
-- `docs/modules/diff-detector.md` — module notes for `scripts/diff-detector.sh`.
-- `docs/modules/doc-updater.md` — module notes for `scripts/doc-updater.sh`.
-
-TODO: Reintroduce broader architecture and stack docs when future diffs touch those areas.

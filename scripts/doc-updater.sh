@@ -54,29 +54,27 @@ build_model_args() {
 set +e
 CODEX_LOG="$TMP_DIR/codex.log"
 : > "$CODEX_LOG"
+rc=0
 if command -v code >/dev/null 2>&1; then
-  mapfile -t MODEL_ARGS < <(build_model_args code)
-  if [[ ${#MODEL_ARGS[@]} -gt 0 ]]; then
-    code exec --sandbox "$CODEX_SANDBOX" "${MODEL_ARGS[@]}" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
+  MODEL_ARGS_STR="$(build_model_args code || true)"
+  if [[ -n "$MODEL_ARGS_STR" ]]; then
+    code exec --sandbox "$CODEX_SANDBOX" --model "$MODEL" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1 || rc=$?
   else
-    code exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
+    code exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1 || rc=$?
   fi
-  rc=$?
 elif command -v codex >/dev/null 2>&1; then
-  mapfile -t MODEL_ARGS < <(build_model_args codex)
-  if [[ ${#MODEL_ARGS[@]} -gt 0 ]]; then
-    codex exec --sandbox "$CODEX_SANDBOX" "${MODEL_ARGS[@]}" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
+  MODEL_ARGS_STR="$(build_model_args codex || true)"
+  if [[ -n "$MODEL_ARGS_STR" ]]; then
+    codex exec --sandbox "$CODEX_SANDBOX" --model "$MODEL" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1 || rc=$?
   else
-    codex exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
+    codex exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1 || rc=$?
   fi
-  rc=$?
 else
   if npx -y @openai/codex exec --help 2>/dev/null | grep -q -- "--model"; then
-    npx -y @openai/codex exec --sandbox "$CODEX_SANDBOX" --model "$MODEL" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
+    npx -y @openai/codex exec --sandbox "$CODEX_SANDBOX" --model "$MODEL" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1 || rc=$?
   else
-    npx -y @openai/codex exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1
+    npx -y @openai/codex exec --sandbox "$CODEX_SANDBOX" "$(cat "$PROMPT_FILE")" >"$CODEX_LOG" 2>&1 || rc=$?
   fi
-  rc=$?
 fi
 set -e
 if [[ $rc -ne 0 ]]; then
