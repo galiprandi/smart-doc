@@ -35,14 +35,6 @@ jobs:
         uses: ./
         with:
           smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
-          branch: main
-          docs_folder: docs
-          prompt_template: prompts/default.md
-          generate_history: 'true'
-          # Optional: custom prompt
-          # prompt_template: prompts/default.md
-          gating_profile: off
-          force_full_repo: 'true'
 
       - name: Upload docs preview
         if: ${{ github.event_name == 'pull_request' }}
