@@ -35,6 +35,8 @@ jobs:
         uses: ./
         with:
           smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
+        env:
+          OPENAI_API_KEY: ${{ secrets.SMART_DOC_API_TOKEN }}
 
       - name: Upload docs preview
         if: ${{ github.event_name == 'pull_request' }}
