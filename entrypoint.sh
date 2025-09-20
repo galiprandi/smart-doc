@@ -6,6 +6,7 @@ echo "✳️  [mini] Minimal Smart Doc entrypoint"
 # Inputs
 BRANCH="${INPUT_BRANCH:-main}"
 MINI_MODE="${INPUT_MINI_MODE:-${MINI_MODE:-on}}"  # on|off
+OUTPUT_MODE="${INPUT_OUTPUT_MODE:-${OUTPUT_MODE:-pr}}"  # pr|log
 OPENAI_API_KEY="${INPUT_SMART_DOC_API_TOKEN:-${OPENAI_API_KEY:-}}"
 
 TIMELINE="SMART_TIMELINE.md"
@@ -24,6 +25,11 @@ echo "$NEW_ENTRY" >> "$TIMELINE"
 echo >> "$TIMELINE"
 
 echo "🧪 [mini] Entrada añadida: $NEW_ENTRY"
+
+if [[ "$OUTPUT_MODE" == "log" ]]; then
+  echo "🧾 [mini] OUTPUT_MODE=log → no push/PR (solo registro)"
+  exit 0
+fi
 
 # Commit and push PR branch
 git config user.email "github-actions[bot]@users.noreply.github.com"

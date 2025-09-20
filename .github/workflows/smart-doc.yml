@@ -38,6 +38,7 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.SMART_DOC_API_TOKEN }}
           MINI_MODE: on
+          OUTPUT_MODE: log
 
       - name: Upload docs preview
         if: ${{ github.event_name == 'pull_request' }}
