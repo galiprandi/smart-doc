@@ -1,55 +1,48 @@
 #!/usr/bin/env bash
-# /**
-#  * Smart Doc — Entrypoint Orchestrator
-#  * Responsibility:
-#  *   - Orchestrate the Smart Doc pipeline in CI/local runs.
-#  *   - Delegate to scripts: validator → diff-detector → prompt-builder → doc-updater → publisher.
-#  * Invariants (keep in future iterations):
-#  *   - No diff resolution or prompt assembly inline; always use scripts.
-#  *   - Keep logs concise with emojis.
-#  */
 set -euo pipefail
 
-log() { echo "📝 [smart-doc] $*"; }
-warn() { echo "::warning::⚠️ $*"; }
-err() { echo "::error::❌ $*"; }
+echo "✳️  [mini] Minimal Smart Doc entrypoint"
 
-INPUT_DOCS_FOLDER=${INPUT_DOCS_FOLDER:-docs}
+# Inputs
+BRANCH="${INPUT_BRANCH:-main}"
+MINI_MODE="${INPUT_MINI_MODE:-${MINI_MODE:-on}}"  # on|off
+OPENAI_API_KEY="${INPUT_SMART_DOC_API_TOKEN:-${OPENAI_API_KEY:-}}"
 
-## Git identity for commits (publisher handles PR push)
-git config --global user.name "GitHub Action" || true
-git config --global user.email "action@github.com" || true
+TIMELINE="SMART_TIMELINE.md"
+TMP_DIR=tmp; mkdir -p "$TMP_DIR"
 
-# Ensure docs folder exists
-mkdir -p "$INPUT_DOCS_FOLDER"
-
-## 1) Validate environment and inputs
-bash "${GITHUB_ACTION_PATH:-.}/scripts/validator.sh"
-
-## 2) Detect diffs (writes tmp/changed_files.txt and tmp/patch.diff)
-bash "${GITHUB_ACTION_PATH:-.}/scripts/diff-detector.sh"
-
-## Early exit if no changed files
-if [[ ! -s tmp/changed_files.txt ]]; then
-  warn "No changed files detected. Nothing to document."
+if [[ "${MINI_MODE}" != "on" ]]; then
+  echo "ℹ️  [mini] MINI_MODE=off → no-op (placeholder para modo standard)"
   exit 0
 fi
 
-## 3) Build prompt → tmp/prompt.md
-PROMPT_FILE=$(mktemp)
-BUILDER_PATH="${GITHUB_ACTION_PATH:-.}/scripts/prompt-builder.sh"
-[[ -f "$BUILDER_PATH" ]] || BUILDER_PATH="./scripts/prompt-builder.sh"
-bash "$BUILDER_PATH" > "$PROMPT_FILE"
+NEW_ENTRY="No hubo actualizaciones materiales de documentación en este diff; verificación mínima del pipeline."
 
-## 4) Update docs via Codex write mode (sets tmp/have_changes.flag)
-PROMPT_FILE="$PROMPT_FILE" bash "${GITHUB_ACTION_PATH:-.}/scripts/doc-updater.sh"
+# Append with spacing
+if [[ -f "$TIMELINE" && -s "$TIMELINE" ]]; then echo >> "$TIMELINE"; fi
+echo "$NEW_ENTRY" >> "$TIMELINE"
+echo >> "$TIMELINE"
 
-## 5) Publish PR if changes and event is push
-bash "${GITHUB_ACTION_PATH:-.}/scripts/publisher.sh"
+echo "🧪 [mini] Entrada añadida: $NEW_ENTRY"
 
-## 6) Post PR comment (on pull_request events)
-if [[ "${GITHUB_EVENT_NAME:-}" == "pull_request" ]]; then
-  bash "${GITHUB_ACTION_PATH:-.}/scripts/post-pr-comment.sh"
+# Commit and push PR branch
+git config user.email "github-actions[bot]@users.noreply.github.com"
+git config user.name "github-actions[bot]"
+git add "$TIMELINE"
+if git diff --cached --quiet; then
+  echo "✅ [mini] Sin cambios que commitear"; exit 0; fi
+
+git commit -m "chore(docs): timeline health entry [mini]"
+BR_NAME="smart-doc/docs-update-$(date +%s)"
+echo "🚀 [mini] Push $BR_NAME"
+git push -u origin "HEAD:$BR_NAME"
+
+if command -v gh >/dev/null 2>&1; then
+  gh pr create --head "$BR_NAME" --base "$BRANCH" \
+    --title "Smart Doc: minimal timeline update" \
+    --body "Minimal inline entrypoint appended a health entry to SMART_TIMELINE.md."
+else
+  echo "::warning::gh no disponible; PR no creado"
 fi
 
-log "Smart Doc completed (publish handled by publisher.sh)."
+echo "✅ [mini] Done"

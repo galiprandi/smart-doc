@@ -35,11 +35,9 @@ jobs:
         uses: ./
         with:
           smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
-          branch: main
-          docs_folder: docs
-          generate_history: 'true'
-          # Optional: custom prompt
-          # prompt_template: prompts/default.md
+        env:
+          OPENAI_API_KEY: ${{ secrets.SMART_DOC_API_TOKEN }}
+          MINI_MODE: on
 
       - name: Upload docs preview
         if: ${{ github.event_name == 'pull_request' }}
