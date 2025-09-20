@@ -13,69 +13,51 @@ TIMELINE="SMART_TIMELINE.md"
 TMP_DIR=tmp; mkdir -p "$TMP_DIR"
 
 if [[ "${MINI_MODE}" != "on" ]]; then
-  echo "🔧 [std] MINI_MODE=off → modo estándar v0 (solo logs)"
+  echo "🔧 [std] MINI_MODE=off → modo estándar v1 (double-pass codex; log-only configurable)"
   mkdir -p tmp
-  # Recolectar diff simple HEAD^..HEAD
-  CHANGED_FILES=$(git diff --name-only HEAD^..HEAD || true)
-  PATCH_UNI=$(git diff --unified=0 HEAD^..HEAD || true)
+  # Mejor diff: comparar contra merge-base con la rama objetivo
+  BASE=$(git merge-base "origin/${BRANCH}" HEAD 2>/dev/null || git merge-base "${BRANCH}" HEAD 2>/dev/null || echo HEAD^)
+  CHANGED_FILES=$(git diff --name-only "$BASE"..HEAD || true)
+  PATCH_UNI=$(git diff --unified=0 "$BASE"..HEAD || true)
   printf "%s\n" "$CHANGED_FILES" > tmp/changed_files.txt
   printf "%s\n" "$PATCH_UNI" > tmp/patch.diff
   FILES_COUNT=$(printf "%s" "$CHANGED_FILES" | sed '/^$/d' | wc -l | tr -d ' ')
   PATCH_BYTES=$(printf "%s" "$PATCH_UNI" | wc -c | tr -d ' ')
   echo "🔎 [std] files=$FILES_COUNT, patch_bytes=$PATCH_BYTES"
-  if [[ $FILES_COUNT -gt 0 ]]; then
-    echo "✍️  [std] Generando docs/_changes.md (v1.1)"
-    mkdir -p docs
-    SHORT_SHA=$(git rev-parse --short HEAD || echo unknown)
-    UTC_DATE=$(env TZ=UTC date +%Y-%m-%dT%H:%M:%SZ)
-    # Agrupar por primer directorio
-    MODULES=$(printf "%s\n" "$CHANGED_FILES" | sed '/^$/d' | awk -F'/' '{print $1}' | sort | uniq -c | awk '{printf "- %s: %s files\n", $2, $1}')
-    {
-      echo "# Recent Changes"
-      echo
-      echo "- Date (UTC): $UTC_DATE"
-      echo "- Commit: $SHORT_SHA"
-      echo
-      echo "## Changed Files"
-      echo "$CHANGED_FILES" | sed '/^$/d' | sed 's/^/- /'
-      echo
-      echo "## Changed Modules"
-      if [[ -n "$MODULES" ]]; then
-        echo "$MODULES"
-      else
-        echo "- (root): $FILES_COUNT files"
-      fi
-      echo
-      echo "## Totals"
-      echo "- files: $FILES_COUNT"
-      echo "- patch_bytes: $PATCH_BYTES"
-      echo
-    } > docs/_changes.md
-    echo "✅ [std] docs/_changes.md actualizado"
+  # Ensamblar CONTEXT
+  SHORT_SHA=$(git rev-parse --short HEAD || echo unknown)
+  UTC_DATE=$(env TZ=UTC date +%Y-%m-%dT%H:%M:%SZ)
+  {
+    echo "Commit: $SHORT_SHA"
+    echo "DateUTC: $UTC_DATE"
+    echo "Base: $BASE"
+    echo
+    echo "Changed files:"; printf "%s\n" "$CHANGED_FILES" | sed '/^$/d' || true
+    echo
+    echo "Unified diff:"; printf "%s\n" "$PATCH_UNI" || true
+  } > tmp/context.txt
+
+  # 1) Ejecutar Codex para Timeline
+  if command -v code >/dev/null 2>&1 || command -v codex >/dev/null 2>&1 || npx -y @openai/codex -v >/dev/null 2>&1; then
+    echo "📝 [std] Codex pass 1 (timeline)"
+    export CONTEXT=$(cat tmp/context.txt)
+    : ${CODEX_BIN:=$(command -v code || command -v codex || echo "npx -y @openai/codex")}
+    $CODEX_BIN --input prompts/timeline.md --output tmp/timeline.out || echo "::warning::Codex timeline falló; continuando"
   else
-    echo "ℹ️  [std] Sin archivos cambiados → no se escribe docs/_changes.md"
+    echo "::warning::Codex CLI no disponible; saltando pass de timeline"
   fi
-  if [[ "$OUTPUT_MODE" == "log" ]]; then
-    echo "🧾 [std] OUTPUT_MODE=log → no push/PR (solo registro)"
-    exit 0
-  fi
-  # OUTPUT_MODE=pr → commit y (futuro) PR
-  git config user.email "github-actions[bot]@users.noreply.github.com"
-  git config user.name "github-actions[bot]"
-  git add docs/_changes.md || true
-  if git diff --cached --quiet; then
-    echo "ℹ️  [std] No hay cambios que publicar"; exit 0; fi
-  git commit -m "docs: update _changes.md (standard v1)"
-  BR_NAME="smart-doc/docs-update-$(date +%s)"
-  echo "🚀 [std] Push $BR_NAME"
-  git push -u origin "HEAD:$BR_NAME"
-  if command -v gh >/dev/null 2>&1; then
-    gh pr create --head "$BR_NAME" --base "$BRANCH" \
-      --title "Smart Doc: update docs/_changes.md (std v1)" \
-      --body "Standard v1 wrote docs/_changes.md from HEAD^..HEAD diff."
+
+  # 2) Ejecutar Codex para Docs
+  if command -v code >/dev/null 2>&1 || command -v codex >/dev/null 2>&1 || npx -y @openai/codex -v >/dev/null 2>&1; then
+    echo "📚 [std] Codex pass 2 (docs)"
+    export CONTEXT=$(cat tmp/context.txt)
+    : ${CODEX_BIN:=$(command -v code || command -v codex || echo "npx -y @openai/codex")}
+    $CODEX_BIN --input prompts/docs.md --output tmp/docs.out || echo "::warning::Codex docs falló; continuando"
   else
-    echo "::warning::gh no disponible; PR no creado"
+    echo "::warning::Codex CLI no disponible; saltando pass de docs"
   fi
+
+  echo "🧾 [std] OUTPUT_MODE=$OUTPUT_MODE → sin PR en desarrollo"
   exit 0
 fi
 
