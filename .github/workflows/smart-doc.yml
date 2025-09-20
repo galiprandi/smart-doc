@@ -40,6 +40,15 @@ jobs:
           MINI_MODE: off
           OUTPUT_MODE: log
 
+      - name: Upload tmp outputs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: smart-doc-tmp
+          path: |
+            tmp/**
+          if-no-files-found: warn
+
       - name: Upload docs preview
         if: ${{ github.event_name == 'pull_request' }}
         uses: actions/upload-artifact@v4

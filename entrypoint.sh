@@ -67,6 +67,11 @@ if [[ "${MINI_MODE}" != "on" ]]; then
   fi
 
   echo "🧾 [std] OUTPUT_MODE=$OUTPUT_MODE → sin PR en desarrollo"
+  # Previews en logs (solo si existen)
+  if [[ -f tmp/timeline.out ]]; then
+    echo "--- timeline.out (head) ---"; head -c 2000 tmp/timeline.out || true; echo; echo "---------------------------"; fi
+  if [[ -f tmp/docs.out ]]; then
+    echo "--- docs.out (head) ---"; head -c 2000 tmp/docs.out || true; echo; echo "-----------------------"; fi
   exit 0
 fi
 
