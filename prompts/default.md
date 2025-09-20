@@ -104,6 +104,10 @@ Smart Timeline (repository change list)
 - Do not fabricate tickets or authors. Use data present in the diff/PR/commit message.
 - Spacing: separate entries with exactly one blank line. End the file with a single trailing newline. Do not add extra headings or horizontal rules.
 
+Deterministic timeline write (safety)
+- Always append at least one minimal, truthful entry per run to confirm pipeline execution, even if no doc pages change.
+- When no documentation updates are warranted by the diff, write a single entry like: "No documentation updates were necessary for this diff; pipeline health check."
+
 Inclusion rules (strict)
 - Include only values that you can extract or verify from the current diff, changed files list, commit messages, PR metadata, or other repository context provided in this prompt.
 - Do not infer or guess any values. If a field cannot be determined with high confidence, omit that field rather than inventing content.
