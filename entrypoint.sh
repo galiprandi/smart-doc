@@ -24,10 +24,12 @@ if [[ "${MINI_MODE}" != "on" ]]; then
   PATCH_BYTES=$(printf "%s" "$PATCH_UNI" | wc -c | tr -d ' ')
   echo "🔎 [std] files=$FILES_COUNT, patch_bytes=$PATCH_BYTES"
   if [[ $FILES_COUNT -gt 0 ]]; then
-    echo "✍️  [std] Generando docs/_changes.md (v1 mínimo)"
+    echo "✍️  [std] Generando docs/_changes.md (v1.1)"
     mkdir -p docs
     SHORT_SHA=$(git rev-parse --short HEAD || echo unknown)
     UTC_DATE=$(env TZ=UTC date +%Y-%m-%dT%H:%M:%SZ)
+    # Agrupar por primer directorio
+    MODULES=$(printf "%s\n" "$CHANGED_FILES" | sed '/^$/d' | awk -F'/' '{print $1}' | sort | uniq -c | awk '{printf "- %s: %s files\n", $2, $1}')
     {
       echo "# Recent Changes"
       echo
@@ -36,6 +38,17 @@ if [[ "${MINI_MODE}" != "on" ]]; then
       echo
       echo "## Changed Files"
       echo "$CHANGED_FILES" | sed '/^$/d' | sed 's/^/- /'
+      echo
+      echo "## Changed Modules"
+      if [[ -n "$MODULES" ]]; then
+        echo "$MODULES"
+      else
+        echo "- (root): $FILES_COUNT files"
+      fi
+      echo
+      echo "## Totals"
+      echo "- files: $FILES_COUNT"
+      echo "- patch_bytes: $PATCH_BYTES"
       echo
     } > docs/_changes.md
     echo "✅ [std] docs/_changes.md actualizado"
