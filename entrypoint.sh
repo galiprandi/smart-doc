@@ -38,30 +38,20 @@ if [[ "${MINI_MODE}" != "on" ]]; then
   } > tmp/context.txt
 
   # 1) Ejecutar Codex para Timeline
-  if command -v code >/dev/null 2>&1 || command -v codex >/dev/null 2>&1 || npx -y @openai/codex -v >/dev/null 2>&1; then
+  if npx -y @openai/codex -v >/dev/null 2>&1; then
     echo "📝 [std] Codex pass 1 (timeline)"
     export CONTEXT="$(cat tmp/context.txt)"
-    : ${CODEX_BIN:=$(command -v code || command -v codex || echo "npx -y @openai/codex")}
-    # Pasar archivo como prompt; redirigir salida a tmp
-    if [[ "$CODEX_BIN" == npx* ]]; then
-      $CODEX_BIN -- "$(cat prompts/timeline.md)" > tmp/timeline.out 2>/dev/null || echo "::warning::Codex timeline falló; continuando"
-    else
-      $CODEX_BIN "$(cat prompts/timeline.md)" > tmp/timeline.out 2>/dev/null || echo "::warning::Codex timeline falló; continuando"
-    fi
+    # Pasar prompt por stdin; usar "--" para finalizar flags
+    cat prompts/timeline.md | npx -y @openai/codex -- > tmp/timeline.out 2>/dev/null || echo "::warning::Codex timeline falló; continuando"
   else
     echo "::warning::Codex CLI no disponible; saltando pass de timeline"
   fi
 
   # 2) Ejecutar Codex para Docs
-  if command -v code >/dev/null 2>&1 || command -v codex >/dev/null 2>&1 || npx -y @openai/codex -v >/dev/null 2>&1; then
+  if npx -y @openai/codex -v >/dev/null 2>&1; then
     echo "📚 [std] Codex pass 2 (docs)"
     export CONTEXT="$(cat tmp/context.txt)"
-    : ${CODEX_BIN:=$(command -v code || command -v codex || echo "npx -y @openai/codex")}
-    if [[ "$CODEX_BIN" == npx* ]]; then
-      $CODEX_BIN -- "$(cat prompts/docs.md)" > tmp/docs.out 2>/dev/null || echo "::warning::Codex docs falló; continuando"
-    else
-      $CODEX_BIN "$(cat prompts/docs.md)" > tmp/docs.out 2>/dev/null || echo "::warning::Codex docs falló; continuando"
-    fi
+    cat prompts/docs.md | npx -y @openai/codex -- > tmp/docs.out 2>/dev/null || echo "::warning::Codex docs falló; continuando"
   else
     echo "::warning::Codex CLI no disponible; saltando pass de docs"
   fi
