@@ -37,6 +37,7 @@ jobs:
           smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
           branch: main
           docs_folder: docs
+          prompt_template: prompts/default.md
           generate_history: 'true'
           # Optional: custom prompt
           # prompt_template: prompts/default.md
