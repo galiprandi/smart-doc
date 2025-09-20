@@ -41,6 +41,8 @@ jobs:
           generate_history: 'true'
           # Optional: custom prompt
           # prompt_template: prompts/default.md
+          gating_profile: off
+          force_full_repo: 'true'
 
       - name: Upload docs preview
         if: ${{ github.event_name == 'pull_request' }}
