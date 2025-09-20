@@ -7,3 +7,6 @@ Title: Minor docs scaffolding for diff-detector and doc-updater
 Merge commit: N/A
 Scope: docs/
 TL;DR: Added documentation scaffolding for the updated diff-detector and doc-updater components; no user-facing API changes.
+
+No hubo actualizaciones materiales de documentación en este diff; verificación mínima del pipeline.
+
