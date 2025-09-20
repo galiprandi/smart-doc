@@ -37,7 +37,7 @@ jobs:
           smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
         env:
           OPENAI_API_KEY: ${{ secrets.SMART_DOC_API_TOKEN }}
-          MINI_MODE: on
+          MINI_MODE: off
           OUTPUT_MODE: log
 
       - name: Upload docs preview

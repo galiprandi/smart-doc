@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "✳️  [mini] Minimal Smart Doc entrypoint"
+echo "✳️  [smart-doc] Entrypoint"
 
 # Inputs
 BRANCH="${INPUT_BRANCH:-main}"
@@ -13,7 +13,17 @@ TIMELINE="SMART_TIMELINE.md"
 TMP_DIR=tmp; mkdir -p "$TMP_DIR"
 
 if [[ "${MINI_MODE}" != "on" ]]; then
-  echo "ℹ️  [mini] MINI_MODE=off → no-op (placeholder para modo standard)"
+  echo "🔧 [std] MINI_MODE=off → modo estándar v0 (solo logs)"
+  mkdir -p tmp
+  # Recolectar diff simple HEAD^..HEAD
+  CHANGED_FILES=$(git diff --name-only HEAD^..HEAD || true)
+  PATCH_UNI=$(git diff --unified=0 HEAD^..HEAD || true)
+  printf "%s\n" "$CHANGED_FILES" > tmp/changed_files.txt
+  printf "%s\n" "$PATCH_UNI" > tmp/patch.diff
+  FILES_COUNT=$(printf "%s" "$CHANGED_FILES" | sed '/^$/d' | wc -l | tr -d ' ')
+  PATCH_BYTES=$(printf "%s" "$PATCH_UNI" | wc -c | tr -d ' ')
+  echo "🔎 [std] files=$FILES_COUNT, patch_bytes=$PATCH_BYTES"
+  echo "🧾 [std] OUTPUT_MODE=$OUTPUT_MODE → no cambios a docs en v0"
   exit 0
 fi
 
