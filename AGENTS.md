@@ -120,3 +120,30 @@ Appendix: Fallbacks and markers
 
 Thank you
 - Keep Smart Doc simple, predictable, and marketing‑friendly. If in doubt, prefer conservative, change‑only doc updates and clear PRs over broad rewrites.
+
+Field Notes — Minimal Flow (2025-09-20)
+
+Context
+- To unblock CI while prompts/CLI were unreliable, we introduced a minimal inline entrypoint that guarantees a safe, observable change per run without external scripts.
+
+What changed
+- `.github/workflows/smart-doc.yml`: simplified step to pass only the API token and export `OPENAI_API_KEY`.
+- `entrypoint.sh`: now can operate in a minimal mode that:
+  - Appends exactly one compliant line to `SMART_TIMELINE.md` (spacing: one blank line between entries; trailing newline).
+  - Commits, pushes a `smart-doc/docs-update-<epoch>` branch, and opens a PR via `gh`.
+- This bypasses validator/diff-detector/prompt-builder/doc-updater/publisher for diagnosis; use as fallback, not as default forever.
+
+Why it worked
+- Removed dependencies on model/prompt/CLI availability, validating permissions and PR flow end‑to‑end.
+
+Evolution Plan (incremental)
+- Phase 1: Externalize a minimal prompt file (English) and allow switching between Mini (timeline-only) and Standard (model-driven) via an input/env flag. Keep timeline append in both modes for observability.
+- Phase 2: Re‑enable the full pipeline behind a circuit breaker: if model path fails or yields no changes, fall back to timeline-only append to avoid “no-op” runs.
+- Phase 3: Tune `prompts/default.md` for high-signal, change-only updates (README/stack/architecture/modules touched by the diff) plus an always-on, compliant SMART_TIMELINE.md entry.
+- Phase 4: Add PR review comment on pull_request runs summarizing doc changes and linking to the artifact/timeline diff.
+- Phase 5: resilience (retries/backoff, clearer logs), and maintain README examples (permissions, anti-loop, concurrency) in sync.
+
+Guardrails retained
+- PR branch prefix `smart-doc/docs-update-`.
+- No direct pushes to protected branches; PRs only.
+- Timeline spacing rules remain strict.

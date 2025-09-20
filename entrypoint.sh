@@ -5,10 +5,16 @@ echo "✳️  [mini] Minimal Smart Doc entrypoint"
 
 # Inputs
 BRANCH="${INPUT_BRANCH:-main}"
+MINI_MODE="${INPUT_MINI_MODE:-${MINI_MODE:-on}}"  # on|off
 OPENAI_API_KEY="${INPUT_SMART_DOC_API_TOKEN:-${OPENAI_API_KEY:-}}"
 
 TIMELINE="SMART_TIMELINE.md"
 TMP_DIR=tmp; mkdir -p "$TMP_DIR"
+
+if [[ "${MINI_MODE}" != "on" ]]; then
+  echo "ℹ️  [mini] MINI_MODE=off → no-op (placeholder para modo standard)"
+  exit 0
+fi
 
 NEW_ENTRY="No hubo actualizaciones materiales de documentación en este diff; verificación mínima del pipeline."
 
