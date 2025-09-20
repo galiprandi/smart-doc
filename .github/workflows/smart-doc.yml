@@ -31,6 +31,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Ensure Codex CLI available
+        shell: bash
+        run: |
+          echo "🔧 Ensuring Codex CLI..."
+          node -v || true
+          npm -v || true
+          which npx || true
+          npm install -g @openai/codex || true
+          npx @openai/codex -v || true
+
       - name: Run Smart Doc
         uses: ./
         with:
