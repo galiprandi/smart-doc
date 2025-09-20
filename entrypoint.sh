@@ -40,9 +40,14 @@ if [[ "${MINI_MODE}" != "on" ]]; then
   # 1) Ejecutar Codex para Timeline
   if command -v code >/dev/null 2>&1 || command -v codex >/dev/null 2>&1 || npx -y @openai/codex -v >/dev/null 2>&1; then
     echo "📝 [std] Codex pass 1 (timeline)"
-    export CONTEXT=$(cat tmp/context.txt)
+    export CONTEXT="$(cat tmp/context.txt)"
     : ${CODEX_BIN:=$(command -v code || command -v codex || echo "npx -y @openai/codex")}
-    $CODEX_BIN --input prompts/timeline.md --output tmp/timeline.out || echo "::warning::Codex timeline falló; continuando"
+    # Pasar archivo como prompt; redirigir salida a tmp
+    if [[ "$CODEX_BIN" == npx* ]]; then
+      $CODEX_BIN -- "$(cat prompts/timeline.md)" > tmp/timeline.out 2>/dev/null || echo "::warning::Codex timeline falló; continuando"
+    else
+      $CODEX_BIN "$(cat prompts/timeline.md)" > tmp/timeline.out 2>/dev/null || echo "::warning::Codex timeline falló; continuando"
+    fi
   else
     echo "::warning::Codex CLI no disponible; saltando pass de timeline"
   fi
@@ -50,9 +55,13 @@ if [[ "${MINI_MODE}" != "on" ]]; then
   # 2) Ejecutar Codex para Docs
   if command -v code >/dev/null 2>&1 || command -v codex >/dev/null 2>&1 || npx -y @openai/codex -v >/dev/null 2>&1; then
     echo "📚 [std] Codex pass 2 (docs)"
-    export CONTEXT=$(cat tmp/context.txt)
+    export CONTEXT="$(cat tmp/context.txt)"
     : ${CODEX_BIN:=$(command -v code || command -v codex || echo "npx -y @openai/codex")}
-    $CODEX_BIN --input prompts/docs.md --output tmp/docs.out || echo "::warning::Codex docs falló; continuando"
+    if [[ "$CODEX_BIN" == npx* ]]; then
+      $CODEX_BIN -- "$(cat prompts/docs.md)" > tmp/docs.out 2>/dev/null || echo "::warning::Codex docs falló; continuando"
+    else
+      $CODEX_BIN "$(cat prompts/docs.md)" > tmp/docs.out 2>/dev/null || echo "::warning::Codex docs falló; continuando"
+    fi
   else
     echo "::warning::Codex CLI no disponible; saltando pass de docs"
   fi
