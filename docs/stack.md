@@ -1,6 +1,6 @@
 # Stack
 
-Last updated: 2025-09-21T05:34:47Z  (commit `cbce57d`)
+Last updated: 2025-09-21T05:34:47Z  (commit `f01f43b`)
 
 Runtime and tools (explicitly referenced in the repository):
 
@@ -12,4 +12,3 @@ Runtime and tools (explicitly referenced in the repository):
 
 Local development:
 - A Dockerfile and `scripts/dev-run-docs.sh` exist to run generation in an Ubuntu environment when needed.
-

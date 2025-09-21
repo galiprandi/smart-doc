@@ -1,6 +1,6 @@
 # Modules
 
-Last updated: 2025-09-21T05:34:47Z  (commit `cbce57d`)
+Last updated: 2025-09-21T05:34:47Z  (commit `f01f43b`)
 
 Key components in the repository:
 
@@ -16,4 +16,3 @@ Key components in the repository:
 Runtime behavior summary:
 - On push events: full pipeline runs and, if docs changed, `publisher.sh` creates a PR on a branch named `smart-doc/docs-update-<sha|epoch>`.
 - On pull_request events: publishing is skipped by design (the action will not push/PR).
-
