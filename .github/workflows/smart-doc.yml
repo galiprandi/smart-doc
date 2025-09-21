@@ -34,12 +34,29 @@ jobs:
       - name: Ensure Codex CLI available
         shell: bash
         run: |
+          set -euo pipefail
           echo "🔧 Ensuring Codex CLI..."
-          node -v || true
-          npm -v || true
-          which npx || true
-          npm install -g @openai/codex || true
-          npx @openai/codex -v || true
+          echo "Node/NPM versions:"; node -v; npm -v
+          echo "Paths:"; which node || true; which npm || true; which npx || true
+          echo "npm prefix:"; npm config get prefix || true
+          export PATH="$(npm config get prefix 2>/dev/null)/bin:$PATH"
+          echo "PATH after prefix:"; echo "$PATH"
+          # Retry install up to 3 times
+          for i in 1 2 3; do
+            echo "Install attempt $i...";
+            if npm install -g @openai/codex; then break; fi
+            sleep 2;
+          done
+          echo "codex -v via npx:";
+          # Try 3 times to detect npx codex
+          for i in 1 2 3; do
+            if npx @openai/codex -v; then
+              echo "Codex CLI is ready"; exit 0;
+            fi
+            echo "npx not ready (attempt $i), retrying..."; sleep 2;
+          done
+          echo "Codex CLI not available after retries" >&2
+          exit 1
 
       - name: Run Smart Doc
         uses: ./
