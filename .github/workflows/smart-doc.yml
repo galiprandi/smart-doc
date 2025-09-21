@@ -22,16 +22,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Codex login (headless)
-        run: npx -y @openai/codex@latest login --api-key "${OPENAI_API_KEY}"
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-
       - name: 📚 Smart Doc
         uses: ./
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         with:
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-          model: gpt-5-nano
+          model: gpt-5-mini
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

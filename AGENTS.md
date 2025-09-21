@@ -36,6 +36,11 @@
 - Secrets: never commit `.env`. In CI, use `secrets.OPENAI_API_KEY` (or `SMART_DOC_API_TOKEN`) with least privileges.
 - Permissions: workflows require `contents: write` and `pull-requests: write` for publishing doc PRs.
 
+## Model Policy 🧠
+- Do not use `gpt-5-nano` for documentation generation; it may produce content but fails to drive repository edits/publisher flows reliably.
+- Prefer `gpt-5-mini` (or higher) for end-to-end doc generation plus script-driven updates.
+- Keep model choice consistent between `action.yml`, workflow inputs, and `smart-doc.sh`.
+
 ## Communication Style (Agent) ✨
 - Always reply brief and concise; prioritize clarity.
 - Place emojis on the left to lead sections/steps (e.g., ✅ Result, ⚙️ Setup, 🧪 Test, 🚀 Publish).

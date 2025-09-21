@@ -7,16 +7,8 @@ log() {
 
 # Function to setup inputs
 setup_inputs() {
-    OPENAI_API_KEY="${OPENAI_API_KEY}"
+    OPENAI_API_KEY="${OPENAI_API_KEY:-}"
     MODEL="${MODEL:-gpt-5-nano}"
-
-    # Verify API key is set
-    if [ -z "$OPENAI_API_KEY" ] || [ "$OPENAI_API_KEY" = "sk-your-openai-key" ]; then
-        log "❌ API key is not properly set"
-        exit 1
-    else
-        log "✅ API key is configured"
-    fi
 
     TIMELINE="SMART_TIMELINE.md"
     TMP_DIR=tmp; mkdir -p "$TMP_DIR"
@@ -43,7 +35,12 @@ run_llm() {
     log "📚 Start documentation process"
 
     if ! cat "$@" | codex mode exec --full-auto -m gpt-5-mini; then
-        log "❌ Failed to run LLM exec mode" >&2
+        # If the CLI surfaced Unauthorized, make it explicit
+        if grep -q "401 Unauthorized" tmp/codex_last.log 2>/dev/null; then
+            log "❌ 401 Unauthorized from provider. Verify OPENAI_API_KEY and model access (${MODEL})." >&2
+        else
+            log "❌ Failed to run LLM exec mode" >&2
+        fi
         return 1
     fi
     local end_time=$(date +%s)
