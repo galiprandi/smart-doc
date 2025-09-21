@@ -8,7 +8,7 @@ log() {
 # Function to setup inputs
 setup_inputs() {
     OPENAI_API_KEY="${OPENAI_API_KEY:-}"
-    MODEL="${MODEL:-gpt-5-nano}"
+    MODEL="${MODEL:-gpt-5-mini}"
 
     TIMELINE="SMART_TIMELINE.md"
     TMP_DIR=tmp; mkdir -p "$TMP_DIR"

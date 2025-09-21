@@ -33,7 +33,7 @@
 - Keep PRs focused and small; avoid mixing refactors with behavior changes.
 
 ## Security & Configuration Tips
-- Secrets: never commit `.env`. In CI, use `secrets.OPENAI_API_KEY` (or `SMART_DOC_API_TOKEN`) with least privileges.
+ - Secrets: never commit `.env`. In CI, use `secrets.OPENAI_API_KEY` with least privileges.
 - Permissions: workflows require `contents: write` and `pull-requests: write` for publishing doc PRs.
 
 ## Model Policy 🧠

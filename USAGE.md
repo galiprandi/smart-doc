@@ -3,11 +3,11 @@
 This guide complements the README with alternative setups, advanced options, and troubleshooting.
 
 ## Requirements recap
-- Secret: `OPENAI_API_KEY`.
-- Job permissions (for `gh` PR ops):
+- Secret: `OPENAI_API_KEY` (your OpenAI API key).
+- Job permissions:
   - `permissions.contents: write`
   - `permissions.pull-requests: write`
-- Optional: `GH_TOKEN` (PAT with `repo`) if your org restricts `GITHUB_TOKEN`.
+  - The default `GITHUB_TOKEN` is sufficient.
 
 ## Minimal workflow (from README)
 ```yaml
@@ -190,9 +190,10 @@ Download generated docs from PR runs without publishing:
 - It never pushes directly to protected branches; it opens a PR instead.
 
 ## Choosing a model
-- Default: `gpt-5-nano` (cheap/fast). Override with the `model` input.
+- Recommended: `gpt-5-mini`.
+- Override with the `model` input when needed.
 - The Action passes `--model` to the CLI when supported and exports `OPENAI_MODEL` and `CODEX_MODEL`.
-- Errors `401 Unauthorized` usually mean your API key lacks access to the chosen model.
+- If you see `401 Unauthorized`, verify `OPENAI_API_KEY` and model access.
 
 Example override:
 ```yaml
