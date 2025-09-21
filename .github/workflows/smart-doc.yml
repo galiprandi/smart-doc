@@ -22,6 +22,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install Codex CLI
+        run: npm install -g @openai/codex
+
+      - name: Codex login (API key)
+        run: codex login --api-key "${OPENAI_API_KEY}"
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
       - name: 📚 Smart Doc
         uses: ./
         with:

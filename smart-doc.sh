@@ -70,6 +70,7 @@ log_docs_folder() {
 main() {
   log "✳️  Entrypoint"
     setup_inputs
+    log "🧩 Model selected: ${MODEL}"
 
     # Install Codex globally or fail
     if ! install_codex_globally; then
@@ -78,10 +79,10 @@ main() {
     fi
 
   # Run LLM with docs prompt
-  if ! run_llm prompts/docs.md; then
-      echo "❌ [smart-doc] Failed to run LLM" >&2
-      exit 1
-  fi
+    if ! run_llm prompts/docs.md; then
+        echo "❌ [smart-doc] Failed to run LLM" >&2
+        exit 1
+    fi
 
   # Log docs folder contents
   log_docs_folder
