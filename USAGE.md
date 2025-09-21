@@ -40,7 +40,6 @@ jobs:
         uses: galiprandi/smart-doc@v1
         with:
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-          docs_folder: docs
           model: gpt-5-mini
 ```
 
@@ -138,7 +137,6 @@ jobs:
         uses: galiprandi/smart-doc@v1
         with:
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-          docs_folder: docs
           model: gpt-5-mini
 ```
 
@@ -175,47 +173,6 @@ Download generated docs from PR runs without publishing:
     if-no-files-found: warn
 ```
 
-## Authentication options for `gh`
-- Default: `GITHUB_TOKEN` with job permissions `contents: write` and `pull-requests: write`.
-- PAT (optional): store as `GH_PAT` and expose it as `GH_TOKEN` if needed:
-```yaml
-env:
-  GH_TOKEN: ${{ secrets.GH_PAT }}
-```
-
-## Merge orchestration (resilient)
-Inputs exposed by the Action for robust merges:
-- `merge_mode`: `auto` | `immediate` | `off` (default `auto`).
-- `merge_wait_seconds`: poll interval to wait for mergeability (default `10`).
-- `merge_max_attempts`: max polling attempts (default `30`).
-- `ready_pr_if_draft`: convert draft PRs to ready (default `true`).
-
-Examples:
-
-Queue auto-merge (default):
-```yaml
-with:
-  openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-  merge_mode: auto
-```
-
-Merge immediately when mergeable (waits for checks):
-```yaml
-with:
-  openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-  merge_mode: immediate
-  merge_wait_seconds: '10'
-  merge_max_attempts: '30'
-  ready_pr_if_draft: 'true'
-```
-
-Leave PR open (no merge action):
-```yaml
-with:
-  openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-  merge_mode: off
-```
-
 ## Anti-loop and concurrency
 - Use `paths-ignore` for `docs/**` and `SMART_TIMELINE.md` on push.
 - Keep a job-level `concurrency` with `cancel-in-progress: true`.
@@ -225,11 +182,6 @@ with:
 - PR not created
   - Ensure job permissions (contents + PRs) and a token available to `gh` (`GITHUB_TOKEN` or `GH_TOKEN`).
   - Check `gh auth status` output in logs.
-- Auto-merge not enqueued/failed
-  - Repo: enable “Allow auto-merge”.
-  - PR is not draft; approvals and status checks satisfied.
-  - Merge method allowed (squash).
-  - Use `merge_mode: immediate` to squash-merge as soon as mergeable.
 - Push rejected (non-fast-forward)
   - The Action uses a resilient strategy (fetch + `--force-with-lease`) on the branch `smart-doc/docs-update-<sha>`.
 

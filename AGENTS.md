@@ -34,12 +34,12 @@ Operation (high level)
 
 Inputs and Secrets
 - Required secret: `OPENAI_API_KEY`.
-- Configurable inputs (see `action.yml`): `branch`, `docs_folder`, `prompt_template`, `model`, `provider`, `openai_base_url`, `generate_history`. Advanced: `INPUT_INCLUDE_WORKING` and `INPUT_PATCH_FILE` (diff injection) for previews/tests.
+- Configurable inputs (see `action.yml`): `model`.
 - GitHub CLI (`gh`) and `GITHUB_TOKEN` are used for opening PRs. The diff detector prefers local git; `gh compare` is optional.
 
 Qwen usage (provider switch)
 - To run with Qwen Code via Ollama locally: set `provider: ollama` and `model: qwen2.5-coder` (or your local tag). No extra secret is needed.
-- To run with a hosted Qwen on an OpenAI‑compatible endpoint (e.g., Together/Fireworks/OpenRouter): set `provider: openai`, provide `model`, `openai_api_key` (the vendor key), and `openai_base_url` to the provider’s base URL.
+- To run with a hosted Qwen on an OpenAI‑compatible endpoint (e.g., Together/Fireworks/OpenRouter): set `provider: openai`, provide `model` and `openai_base_url` to the provider’s base URL.
 
 Jira MCP (optional, auto-configured)
 - If the environment variables `JIRA_EMAIL`, `JIRA_API_TOKEN`, and `JIRA_DOMAIN` are present and non-empty, `scripts/validator.sh` will create (or overwrite) `~/.codex/config.toml` with a Jira MCP server configuration:
@@ -114,7 +114,7 @@ Local development helper
     - `bash scripts/dev-run-docs.sh --prompts-dir prompts --docs-out evals --clean`
   - Requirements:
     - Codex CLI available (`code`, `codex`, or `npx @openai/codex`).
-    - API key in `OPENAI_API_KEY` or `INPUT_OPENAI_API_KEY` for real generations; otherwise the script logs a warning and no docs will be changed.
+    - API key in `OPENAI_API_KEY` for real generations; otherwise the script logs a warning and no docs will be changed.
 
 Robustness note
 - `scripts/doc-updater.sh` was hardened to avoid reliance on `mapfile` and to initialize CLI return handling, improving portability in local shells/macOS sandboxes.
