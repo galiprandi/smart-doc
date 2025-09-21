@@ -43,13 +43,18 @@ jobs:
           echo "PATH after prefix:"; echo "$PATH"
           echo "corepack:"; corepack --version || true
           corepack enable || true
+          echo "Configure npm registry to npmjs.org"
+          npm config set registry https://registry.npmjs.org/
+          echo "npm ping:"; npm ping || true
+          echo "npm view @openai/codex version:"; npm view @openai/codex version || true
+          echo "registry probe:"; curl -sSf https://registry.npmjs.org/@openai/codex | head -c 200 || true
           echo "NPM config:"; npm config list || true
           echo "Global root:"; npm root -g || true
           ls -la "$(npm config get prefix)/bin" || true
           # Strategy A: npx ephemeral package fetch (preferred on hosted runners)
           for i in 1 2 3; do
             echo "npx check attempt $i (ephemeral package)...";
-            if npx --yes --package @openai/codex @openai/codex -v; then
+            if npx --yes --package @openai/codex@latest @openai/codex -v; then
               echo "Codex CLI is ready (npx ephemeral)"; exit 0;
             fi
             sleep 2;
@@ -57,7 +62,7 @@ jobs:
           # Strategy B: global install fallback
           for i in 1 2 3; do
             echo "global install attempt $i...";
-            if npm install -g @openai/codex; then
+            if npm install -g @openai/codex@latest; then
               if npx @openai/codex -v; then echo "Codex CLI is ready (global)"; exit 0; fi
             fi
             sleep 2;
