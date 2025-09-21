@@ -45,7 +45,6 @@ run_llm() {
     fi
     local end_time=$(date +%s)
     local elapsed=$((end_time - start_time))
-    log "✅ Documentation process completed successfully"
     log "Time taken: ${elapsed}s"
 }
 

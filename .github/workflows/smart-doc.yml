@@ -27,5 +27,3 @@ jobs:
         with:
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           model: gpt-5-mini
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
