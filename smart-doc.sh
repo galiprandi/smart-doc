@@ -35,12 +35,7 @@ run_llm() {
     log "📚 Start documentation process"
 
     if ! cat "$@" | codex mode exec --full-auto -m gpt-5-mini; then
-        # If the CLI surfaced Unauthorized, make it explicit
-        if grep -q "401 Unauthorized" tmp/codex_last.log 2>/dev/null; then
-            log "❌ 401 Unauthorized from provider. Verify OPENAI_API_KEY and model access (${MODEL})." >&2
-        else
-            log "❌ Failed to run LLM exec mode" >&2
-        fi
+        log "❌ Failed to run LLM exec mode" >&2
         return 1
     fi
     local end_time=$(date +%s)
