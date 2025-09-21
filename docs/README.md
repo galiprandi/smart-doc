@@ -1,24 +1,12 @@
-# Smart Doc Documentation
+# Smart Doc — Documentation Index
 
-Purpose: Provide concise, change-oriented documentation for Smart Doc as it evolves.
+Last updated: 2025-09-21T05:34:47Z  (commit `f01f43b`)
 
-What’s here: explanation of how the diff-detector and doc-updater pieces affect documentation generation, plus quick pointers for contributors.
+This `docs/` folder contains concise, change-driven documentation for the Smart Doc GitHub Action.
 
-Quickstart (high level):
-- The Diff Detector identifies changed files and produces a patch.
-- The Doc Updater consumes a prompt built from the diff and generates docs under `docs/`.
-- Changes are published via PRs following anti-loop rules.
+- `architecture.md` — high-level pipeline and responsibilities
+- `modules.md` — brief description of top-level scripts and templates
+- `stack.md` — runtime and external tools used by the action
+- `technical-debt.md` — discovered TODOs and refactor notes (empty when none)
 
-Folder structure (high level):
-- `docs/` – generated and authored docs for the project.
-- `docs/architecture/` – architecture overview materials.
-- `docs/modules/` – per-module documentation files touched by changes.
-- `SMART_TIMELINE.md` – repository-wide change timeline.
-
-Common commands (local):
-- Run a local doc-generation flow: see `scripts/dev-run-docs.sh`.
-- Inspect docs folder: `ls -la docs/`.
-
-Internal links:
-- See `docs/README.md` for overview and quicklinks.
-
+Navigate to the files above for details. All content is grounded in the repository at commit `f01f43b`.

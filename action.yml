@@ -1,114 +1,29 @@
-name: 'Smart Doc'
-description: 'Keep your documentation up to date with each integration into main. Smart Doc converts code changes into clear docs (README, stack, architecture, modules) using AI — compatible with OpenAI and adaptable to Qwen.'
+name: 'Smart Doc Action'
+description: 'Generate concise, diff-driven docs on every change.'
 branding:
   icon: 'book-open'
   color: 'purple'
 
 inputs:
-  branch:
-    description: 'Target branch to analyze changes (default: main)'
-    required: false
-    default: 'main'
-  docs_folder:
-    description: 'Folder where documentation is stored (default: docs)'
-    required: false
-    default: 'docs'
-  prompt_template:
-    description: 'Path to custom prompt template in your repo (optional)'
-    required: false
-    default: ''
   model:
-    description: 'Optional model id. Default (for now): gpt-5-nano.'
+    description: 'Optional model used (default: gpt-5-mini)'
     required: false
-    default: 'gpt-5-nano'
-  prompt_preset:
-    description: 'Prompt preset from prompts/presets (default|full_repo|cold_start|minimal)'
-    required: false
-    default: 'default'
-  gating_profile:
-    description: 'Gating profile from prompts/gating (strict|relaxed|off)'
-    required: false
-    default: 'strict'
-  force_full_repo:
-    description: 'Force full-repo documentation regardless of diff'
-    required: false
-    default: 'false'
-  full_repo_when_missing_docs:
-    description: 'If docs folder is missing/empty, switch to full-repo mode'
-    required: false
-    default: 'true'
-  generate_history:
-    description: 'Generate SMART_TIMELINE.md with ticket context (default: true)'
-    required: false
-    default: 'true'
-  smart_doc_api_token:
-    description: 'Your OpenAI API key (alias). Exported as OPENAI_API_KEY.'
+    default: 'gpt-5-mini'
+  openai_api_key:
+    description: 'OpenAI API key'
     required: true
-  jira_host:
-    description: 'Your Jira Cloud host (e.g., https://your-company.atlassian.net)'
-    required: false
-    default: ''
-  jira_email:
-    description: 'Your Jira account email (for MCP auth)'
-    required: false
-    default: ''
-  jira_api_token:
-    description: 'Your Jira API token'
-    required: false
-    default: ''
-  clickup_token:
-    description: 'Your Clickup Personal Access Token'
-    required: false
-    default: ''
-  merge_mode:
-    description: 'How to merge the docs PR: auto | immediate | off (default: auto)'
-    required: false
-    default: 'auto'
-  merge_wait_seconds:
-    description: 'Seconds to wait between mergeability checks (default: 10)'
-    required: false
-    default: '10'
-  merge_max_attempts:
-    description: 'Max attempts when polling for mergeability (default: 30)'
-    required: false
-    default: '30'
-  ready_pr_if_draft:
-    description: 'If true, convert draft PR to ready for review automatically (default: true)'
-    required: false
-    default: 'true'
+
 runs:
   using: 'composite'
   steps:
-    - name: Install OpenAI Codex CLI
-      shell: bash
-      run: |
-        if ! command -v code >/dev/null 2>&1; then
-          npm install -g @openai/codex
-        fi
-    - name: Run Smart Doc
+    - name: 📚 Smart Doc
+      run: ./smart-doc.sh
       shell: bash
       env:
-        INPUT_BRANCH: ${{ inputs.branch }}
-        INPUT_DOCS_FOLDER: ${{ inputs.docs_folder }}
-        INPUT_PROMPT_TEMPLATE: ${{ inputs.prompt_template }}
-        INPUT_PROMPT_PRESET: ${{ inputs.prompt_preset }}
-        INPUT_GATING_PROFILE: ${{ inputs.gating_profile }}
-        INPUT_FORCE_FULL_REPO: ${{ inputs.force_full_repo }}
-        INPUT_FULL_REPO_WHEN_MISSING_DOCS: ${{ inputs.full_repo_when_missing_docs }}
-        INPUT_MODEL: ${{ inputs.model }}
-        INPUT_GENERATE_HISTORY: ${{ inputs.generate_history }}
-        INPUT_SMART_DOC_API_TOKEN: ${{ inputs.smart_doc_api_token }}
-        INPUT_JIRA_HOST: ${{ inputs.jira_host }}
-        INPUT_JIRA_EMAIL: ${{ inputs.jira_email }}
-        INPUT_JIRA_API_TOKEN: ${{ inputs.jira_api_token }}
-        INPUT_CLICKUP_TOKEN: ${{ inputs.clickup_token }}
-        INPUT_MERGE_MODE: ${{ inputs.merge_mode }}
-        INPUT_MERGE_WAIT_SECONDS: ${{ inputs.merge_wait_seconds }}
-        INPUT_MERGE_MAX_ATTEMPTS: ${{ inputs.merge_max_attempts }}
-        INPUT_READY_PR_IF_DRAFT: ${{ inputs.ready_pr_if_draft }}
+        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+        MODEL: ${{ inputs.model }}
         GH_TOKEN: ${{ github.token }}
         GITHUB_TOKEN: ${{ github.token }}
-      run: bash "${GITHUB_ACTION_PATH}/entrypoint.sh"
 
 permissions:
   contents: write

@@ -3,11 +3,11 @@
 This guide complements the README with alternative setups, advanced options, and troubleshooting.
 
 ## Requirements recap
-- Secret: `SMART_DOC_API_TOKEN` (exported as `OPENAI_API_KEY`).
-- Job permissions (for `gh` PR ops):
+- Secret: `OPENAI_API_KEY` (your OpenAI API key).
+- Job permissions:
   - `permissions.contents: write`
   - `permissions.pull-requests: write`
-- Optional: `GH_TOKEN` (PAT with `repo`) if your org restricts `GITHUB_TOKEN`.
+  - The default `GITHUB_TOKEN` is sufficient.
 
 ## Minimal workflow (from README)
 ```yaml
@@ -39,10 +39,8 @@ jobs:
       - name: Smart Doc
         uses: galiprandi/smart-doc@v1
         with:
-          smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
-          branch: main
-          docs_folder: docs
-          generate_history: 'true'
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          model: gpt-5-mini
 ```
 
 ## Alternative triggers
@@ -138,10 +136,8 @@ jobs:
         if: steps.changed.outputs.run == 'true'
         uses: galiprandi/smart-doc@v1
         with:
-          smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
-          branch: main
-          docs_folder: docs
-          generate_history: 'true'
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          model: gpt-5-mini
 ```
 
 ### Multi-branch strategy (develop + main)
@@ -177,47 +173,6 @@ Download generated docs from PR runs without publishing:
     if-no-files-found: warn
 ```
 
-## Authentication options for `gh`
-- Default: `GITHUB_TOKEN` with job permissions `contents: write` and `pull-requests: write`.
-- PAT (optional): store as `GH_PAT` and expose it as `GH_TOKEN` if needed:
-```yaml
-env:
-  GH_TOKEN: ${{ secrets.GH_PAT }}
-```
-
-## Merge orchestration (resilient)
-Inputs exposed by the Action for robust merges:
-- `merge_mode`: `auto` | `immediate` | `off` (default `auto`).
-- `merge_wait_seconds`: poll interval to wait for mergeability (default `10`).
-- `merge_max_attempts`: max polling attempts (default `30`).
-- `ready_pr_if_draft`: convert draft PRs to ready (default `true`).
-
-Examples:
-
-Queue auto-merge (default):
-```yaml
-with:
-  smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
-  merge_mode: auto
-```
-
-Merge immediately when mergeable (waits for checks):
-```yaml
-with:
-  smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
-  merge_mode: immediate
-  merge_wait_seconds: '10'
-  merge_max_attempts: '30'
-  ready_pr_if_draft: 'true'
-```
-
-Leave PR open (no merge action):
-```yaml
-with:
-  smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
-  merge_mode: off
-```
-
 ## Anti-loop and concurrency
 - Use `paths-ignore` for `docs/**` and `SMART_TIMELINE.md` on push.
 - Keep a job-level `concurrency` with `cancel-in-progress: true`.
@@ -227,11 +182,6 @@ with:
 - PR not created
   - Ensure job permissions (contents + PRs) and a token available to `gh` (`GITHUB_TOKEN` or `GH_TOKEN`).
   - Check `gh auth status` output in logs.
-- Auto-merge not enqueued/failed
-  - Repo: enable “Allow auto-merge”.
-  - PR is not draft; approvals and status checks satisfied.
-  - Merge method allowed (squash).
-  - Use `merge_mode: immediate` to squash-merge as soon as mergeable.
 - Push rejected (non-fast-forward)
   - The Action uses a resilient strategy (fetch + `--force-with-lease`) on the branch `smart-doc/docs-update-<sha>`.
 
@@ -240,13 +190,14 @@ with:
 - It never pushes directly to protected branches; it opens a PR instead.
 
 ## Choosing a model
-- Default: `gpt-5-nano` (cheap/fast). Override with the `model` input.
+- Recommended: `gpt-5-mini`.
+- Override with the `model` input when needed.
 - The Action passes `--model` to the CLI when supported and exports `OPENAI_MODEL` and `CODEX_MODEL`.
-- Errors `401 Unauthorized` usually mean your API key lacks access to the chosen model.
+- If you see `401 Unauthorized`, verify `OPENAI_API_KEY` and model access.
 
 Example override:
 ```yaml
 with:
-  smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
+  openai_api_key: ${{ secrets.OPENAI_API_KEY }}
   model: gpt-4o-mini
 ```

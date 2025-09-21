@@ -45,7 +45,7 @@ You can iterate on the prompt and generation locally without committing anything
   ```
 
 Requirements for local preview:
-- `.env` at the repo root with `SMART_DOC_API_TOKEN` (exported to `OPENAI_API_KEY`). See `.env.example`.
+- `.env` at the repo root with `OPENAI_API_KEY`. See `.env.example`.
 - Tools: `git`, `jq`, `curl`. The CI installs `@openai/codex` if needed.
 
 ## CI workflows and branch policy
@@ -56,7 +56,7 @@ Requirements for local preview:
   - Blocks changes to `docs/**` and `SMART_TIMELINE.md` on `develop`. This keeps develop noise‑free; publish happens via `main`.
 
 ## Invariants to keep
-- Entrypoint is a thin orchestrator. Do not re‑introduce diff or PR logic there.
+- Main script is a thin orchestrator. Do not re‑introduce diff or PR logic there.
 - Prompt building never resolves diffs; it only consumes `tmp/changed_files.txt` and `tmp/patch.diff`.
 - `doc-updater.sh` remains in Codex write mode without extra guard rails (security/constrains can be added later as a feature flag).
 - Logs remain concise; do not print full diffs to logs (diffs go into the prompt).

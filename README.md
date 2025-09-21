@@ -29,11 +29,11 @@ flowchart LR
 
 ## Requirements
 - GitHub Actions enabled on your repository.
-- Secret: `SMART_DOC_API_TOKEN` (exported as `OPENAI_API_KEY`).
-- Job permissions for PRs:
+- Secret: `OPENAI_API_KEY` (your OpenAI API key).
+- Job permissions:
   - `permissions.contents: write`
   - `permissions.pull-requests: write`
-- Optional: `GH_TOKEN` (PAT) if your org restricts `GITHUB_TOKEN`.
+  - The default `GITHUB_TOKEN` is sufficient.
 
 ## Quick start (minimal workflow)
 ```yaml
@@ -65,10 +65,8 @@ jobs:
       - name: Smart Doc
         uses: galiprandi/smart-doc@v1
         with:
-          smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
-          branch: main
-          docs_folder: docs
-          generate_history: 'true'
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          model: gpt-5-mini
 ```
 
 ## More recipes and advanced options
@@ -84,8 +82,8 @@ See [`USAGE.md`](./USAGE.md) for:
 ## Model compatibility
 
 ## Model selection
-- Default model: `gpt-5-nano` (fast and cost‑effective).
-- Override via workflow input: `with: model: gpt-4o-mini` (or any accessible model for your key).
+- Recommended model: `gpt-5-mini`.
+- Override via workflow input: `with: model: gpt-5-mini` (or any accessible model for your key).
 - The Action passes the model explicitly to the CLI (`--model <id>` when supported) and also exports `OPENAI_MODEL` and `CODEX_MODEL` for env‑based clients.
 - If you see `401 Unauthorized`, your API key likely lacks access to the selected model.
 - OpenAI (Codex / GPT‑5): first‑class
