@@ -17,6 +17,7 @@ runs:
   using: 'composite'
   steps:
     - name: 📚 Smart Doc
+      run: ./smart-doc.sh
       shell: bash
       env:
         OPENAI_API_KEY: ${{ inputs.openai_api_key }}
