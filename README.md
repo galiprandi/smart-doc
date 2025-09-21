@@ -130,6 +130,7 @@ Git pre‑push example
 Create `.git/hooks/pre-push` (make it executable `chmod +x .git/hooks/pre-push`):
 
 ```bash
+
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -139,15 +140,19 @@ if [ -f .env ]; then
 fi
 
 # Run Smart Doc via bootstrap (soft‑fail; never blocks push)
-bash ./bootstrap.sh || true
+echo "📥 Downloading and running Smart Doc bootstrap..."
+curl -fsSL https://raw.githubusercontent.com/galiprandi/smart-doc/v1/bootstrap.sh | bash
 
 # Optionally include generated docs in this push
-if ! git diff --quiet -- docs SMART_TIMELINE.md; then
-  git add docs SMART_TIMELINE.md || true
+if ! git diff --quiet -- docs; then
+  # Asegura incluir nuevos/eliminados/modificados dentro de docs
+  git add -A docs || true
   if ! git diff --cached --quiet; then
     git commit -m "docs: update generated docs (pre-push)"
+    echo "📚 New docs included in this push."
   fi
 fi
 
 exit 0
+
 ```
