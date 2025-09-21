@@ -2,7 +2,7 @@
 set -euo pipefail
 
 log() {
-    echo -e " [smart-doc] $1"
+    echo "[smart-doc] $1"
 }
 
 # Function to setup inputs
