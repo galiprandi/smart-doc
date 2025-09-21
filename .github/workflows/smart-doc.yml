@@ -41,21 +41,28 @@ jobs:
           echo "npm prefix:"; npm config get prefix || true
           export PATH="$(npm config get prefix 2>/dev/null)/bin:$PATH"
           echo "PATH after prefix:"; echo "$PATH"
-          # Retry install up to 3 times
+          echo "corepack:"; corepack --version || true
+          corepack enable || true
+          echo "NPM config:"; npm config list || true
+          echo "Global root:"; npm root -g || true
+          ls -la "$(npm config get prefix)/bin" || true
+          # Strategy A: npx ephemeral package fetch (preferred on hosted runners)
           for i in 1 2 3; do
-            echo "Install attempt $i...";
-            if npm install -g @openai/codex; then break; fi
+            echo "npx check attempt $i (ephemeral package)...";
+            if npx --yes --package @openai/codex @openai/codex -v; then
+              echo "Codex CLI is ready (npx ephemeral)"; exit 0;
+            fi
             sleep 2;
           done
-          echo "codex -v via npx:";
-          # Try 3 times to detect npx codex
+          # Strategy B: global install fallback
           for i in 1 2 3; do
-            if npx @openai/codex -v; then
-              echo "Codex CLI is ready"; exit 0;
+            echo "global install attempt $i...";
+            if npm install -g @openai/codex; then
+              if npx @openai/codex -v; then echo "Codex CLI is ready (global)"; exit 0; fi
             fi
-            echo "npx not ready (attempt $i), retrying..."; sleep 2;
+            sleep 2;
           done
-          echo "Codex CLI not available after retries" >&2
+          echo "Codex CLI not available after retries (npx/global)." >&2
           exit 1
 
       - name: Run Smart Doc
