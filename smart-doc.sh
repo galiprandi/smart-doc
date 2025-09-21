@@ -5,6 +5,22 @@ log() {
     echo "[smart-doc] $1"
 }
 
+# Soft validation for CI/pipelines (non-blocking)
+soft_prereq_check() {
+    # If API key is missing, skip gracefully (useful in CI without secrets or forked PRs)
+    if [ -z "${OPENAI_API_KEY:-}" ]; then
+        log "🔑 OPENAI_API_KEY not set; skipping Smart Doc (soft exit)"
+        exit 0
+    fi
+    # If Codex CLI is absent and npm unavailable to install it, skip gracefully
+    if ! command -v codex >/dev/null 2>&1; then
+        if ! command -v npm >/dev/null 2>&1; then
+            log "🧠 codex not found and npm unavailable; skipping Smart Doc (soft exit)"
+            exit 0
+        fi
+    fi
+}
+
 # Function to setup inputs
 setup_inputs() {
     OPENAI_API_KEY="${OPENAI_API_KEY:-}"
@@ -59,6 +75,7 @@ log_docs_folder() {
 # Main function to orchestrate everything
 main() {
   log "✳️  Entrypoint"
+    soft_prereq_check
     setup_inputs
     log "🧩 Model selected: ${MODEL}"
 
