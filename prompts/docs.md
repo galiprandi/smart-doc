@@ -15,8 +15,9 @@ Goal
 
 Process
 - Analyze the codebase to identify key components: architecture, modules, stack, and runtime.
+- Scan for TODO comments or refactoring notes in the code; if found, create or update `docs/technical-debt.md` with a list of identified items (include file, line, and comment).
 - Compare with existing docs; update only sections affected by discrepancies or new insights.
-- Structure docs hierarchically: `README.md` as index with links, followed by specific pages (e.g., `architecture.md`, `modules.md`, `stack.md`).
+- Structure docs hierarchically: `README.md` as index with links, followed by specific pages (e.g., `architecture.md`, `modules.md`, `stack.md`, `technical-debt.md` if applicable).
 - Ensure all links in `README.md` are valid and point to existing files.
 - Use Mermaid for diagrams only where they clarify complex flows or relationships.
 
@@ -31,7 +32,7 @@ Guidelines
 - Prioritize change-only updates: Do not rewrite entire docs unless major discrepancies require it.
 - If no discrepancies are found, minimize or skip updates.
 - Maintain readability: Use headings, lists, code blocks, and links appropriately.
-- For Mermaid: Keep diagrams simple and directly tied to code structures.
+- For Mermaid: Keep diagrams simple and directly tied to code structures. Use proper flowchart syntax; wrap node labels with special characters (like parentheses) in double quotes, e.g., F["LLM CLI (codex) invocation"]. Avoid unescaped special characters in labels to prevent parse errors.
 
 What not to do
 - Do not document business logic or infer non-technical details.

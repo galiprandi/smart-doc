@@ -1,21 +1,24 @@
-# Stack & Runtime
+# Stack and Runtime
 
-Last updated: 2025-09-21T05:23:25Z
+Last updated: 2025-09-21T05:29:20Z
 
-This file lists runtime expectations and dependencies directly observable in the repository.
+Runtime
+- Bash scripts (POSIX-compatible, strict mode `set -euo pipefail`).
+- Requires Node/npm for optional global install of `@openai/codex` when the CLI is not present.
 
-- Runtime: Bash scripts as the orchestration layer (`smart-doc.sh`). Scripts assume a POSIX shell (`bash`) with `set -euo pipefail`.
-- External tooling invoked by scripts:
-  - Node / npm (used to install `@openai/codex` globally when `codex` is not available).
-  - `codex` CLI (the LLM client). The script expects it to be available on PATH or installs it via `npm`.
-  - `gh` (GitHub CLI) is referenced in AGENTS.md and used by the publisher flow in other scripts, though not invoked directly in `smart-doc.sh`.
+Dependencies
+- `@openai/codex` (LLM CLI) — recommended to be installed in the runner environment or available via `codex` command.
+- `gh` (GitHub CLI) — used by the publisher in full pipeline flows for opening PRs (not strictly required by minimal `smart-doc.sh` but referenced in docs and AGENTS.md).
 
-- GitHub Action environment:
-  - `action.yml` passes `OPENAI_API_KEY` and `MODEL` to `smart-doc.sh`.
-  - Action requests `contents: write` and `pull-requests: read` permissions.
+Inputs and Secrets
+- Required secret: `OPENAI_API_KEY` (exported into the action's environment).
+- Optional input: `model` (default set in `action.yml` to `gpt-5-mini`).
 
-Notes and portability
+Permissions (from `action.yml`)
+- `contents: write`
+- `pull-requests: read`
 
-- The entrypoint installs `@openai/codex` globally when `codex` is missing; runners must have `npm` available for that path to succeed.
-- The repository includes a minimal timeline file `SMART_TIMELINE.md` and prompt templates for both docs and timeline entries.
+Notes
+- `AGENTS.md` contains extended guidance (Jira MCP, Qwen provider notes, anti-loop workflow snippets, and local Docker development instructions).
+- For local development the repository provides helper scripts described in `AGENTS.md`.
 

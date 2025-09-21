@@ -1,18 +1,20 @@
 # Smart Doc — Documentation Index
 
-Last updated: 2025-09-21T05:23:25Z
+Last updated: 2025-09-21T05:29:20Z
 
-This `docs/` folder contains concise, code‑grounded documentation for the Smart Doc action.
+This directory contains concise, change-driven documentation generated to reflect the repository layout and runtime behavior.
 
-- `architecture.md` — high‑level architecture and flow
-- `modules.md` — repository modules and responsibilities
-- `stack.md` — runtime, dependencies, and environment notes
+Files:
+- `architecture.md` — high-level architecture and runtime flow
+- `modules.md` — description of key scripts and modules
+- `stack.md` — runtime, dependencies, and inputs
 
-See each page for a short, factual summary derived from the repository files (e.g. `action.yml`, `smart-doc.sh`, and `prompts/`).
+Refer to the repository root for primary action and prompts:
+- `action.yml` — Action inputs and permissions
+- `smart-doc.sh` — minimal entrypoint orchestration
+- `prompts/` — prompt templates used by the generator
 
-Links
-
-- Architecture: `architecture.md`
-- Modules: `modules.md`
-- Stack & runtime: `stack.md`
+Usage
+- Docs are intended to be change-focused and idempotent.
+- If you modify code or workflows, re-run the generator to update these pages.
 

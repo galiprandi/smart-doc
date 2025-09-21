@@ -1,21 +1,22 @@
-# Modules
+# Modules and Key Scripts
 
-Last updated: 2025-09-21T05:23:25Z
+Last updated: 2025-09-21T05:29:20Z
 
-This page lists the main scripts and folders and their responsibilities based on the repository contents.
+- `smart-doc.sh` — main minimal entrypoint (Bash, strict mode). It:
+  - Validates `OPENAI_API_KEY` and `MODEL` (environment inputs).
+  - Attempts to install `@openai/codex` CLI if not present.
+  - Runs the Codex CLI with `prompts/docs.md` to generate docs.
+  - Logs contents of the `docs/` folder if present.
 
-- `action.yml` — Composite GitHub Action metadata and inputs; defines environment variables passed to the entrypoint.
-- `smart-doc.sh` — Entrypoint and orchestrator. Key responsibilities:
-  - Validate inputs (`OPENAI_API_KEY`, `MODEL` defaults)
-  - Ensure Codex CLI (`codex`) is installed (attempts `npm install -g @openai/codex`)
-  - Run the LLM with prompt files (uses `prompts/docs.md` by default)
-  - Log the `docs/` folder contents
-- `prompts/` — Prompt templates used by the LLM. Present files:
-  - `prompts/docs.md` — main generation instructions (mirrors expectations for the agent)
-  - `prompts/timeline.md` — timeline entry template
-- `SMART_TIMELINE.md` — timeline file (present at repo root). The repository contains strict spacing rules for timeline entries (append-only, exactly one blank line between entries).
+- `action.yml` — composite action metadata. Declares inputs (`model`, `openai_api_key`) and runs `./smart-doc.sh`.
 
-Where generation happens
+- `prompts/` — contains prompt templates used by the generator:
+  - `prompts/docs.md` — instructions for the documentation writer (this file).
+  - `prompts/timeline.md` — timeline prompt template.
 
-- The code delegates actual doc creation to an external LLM CLI (`codex`). The repository contains the prompts and the orchestration; generated files are expected to appear under `docs/` (by the CLI process).
+- `AGENTS.md` — repository guidance for AI agents and guardrails. It documents the fuller pipeline and append-only `SMART_TIMELINE.md` rules.
+
+Files referenced by the generator:
+- `SMART_TIMELINE.md` — append-only timeline (empty in repo root).
+- `tmp/` — temporary runtime files (created by scripts when used).
 
