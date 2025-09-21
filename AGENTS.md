@@ -34,8 +34,12 @@ Operation (high level)
 
 Inputs and Secrets
 - Required secret: `SMART_DOC_API_TOKEN` (exported as `OPENAI_API_KEY`).
-- Configurable inputs (see `action.yml`): `branch`, `docs_folder`, `prompt_template`, `model`, `generate_history`. Advanced: `INPUT_INCLUDE_WORKING` and `INPUT_PATCH_FILE` (diff injection) for previews/tests.
+- Configurable inputs (see `action.yml`): `branch`, `docs_folder`, `prompt_template`, `model`, `provider`, `openai_base_url`, `generate_history`. Advanced: `INPUT_INCLUDE_WORKING` and `INPUT_PATCH_FILE` (diff injection) for previews/tests.
 - GitHub CLI (`gh`) and `GITHUB_TOKEN` are used for opening PRs. The diff detector prefers local git; `gh compare` is optional.
+
+Qwen usage (provider switch)
+- To run with Qwen Code via Ollama locally: set `provider: ollama` and `model: qwen2.5-coder` (or your local tag). No extra secret is needed.
+- To run with a hosted Qwen on an OpenAI‑compatible endpoint (e.g., Together/Fireworks/OpenRouter): set `provider: openai`, provide `model`, `smart_doc_api_token` (the vendor key), and `openai_base_url` to the provider’s base URL.
 
 Jira MCP (optional, auto-configured)
 - If the environment variables `JIRA_EMAIL`, `JIRA_API_TOKEN`, and `JIRA_DOMAIN` are present and non-empty, `scripts/validator.sh` will create (or overwrite) `~/.codex/config.toml` with a Jira MCP server configuration:
@@ -114,6 +118,22 @@ Local development helper
 
 Robustness note
 - `scripts/doc-updater.sh` was hardened to avoid reliance on `mapfile` and to initialize CLI return handling, improving portability in local shells/macOS sandboxes.
+
+Appendix: GitHub MCP tools (available in Codex CLI)
+- The following GitHub tools are typically available to agents running via Codex CLI in this repository’s workflows. Availability can depend on credentials and runtime context.
+
+- Pull Requests: `list_pull_requests`, `get_pull_request`, `get_pull_request_status`, `get_pull_request_diff`, `get_pull_request_files`, `get_pull_request_reviews`, `get_pull_request_review_comments`, `create_pull_request`, `update_pull_request`, `merge_pull_request`, `update_pull_request_branch`, `create_pending_pull_request_review`, `add_comment_to_pending_review`, `submit_pending_pull_request_review`, `delete_pending_pull_request_review`, `request_copilot_review`, `assign_copilot_to_issue`.
+- Issues: `create_issue`, `get_issue`, `list_issues`, `update_issue`, `add_issue_comment`, sub-issues (`add_sub_issue`, `list_sub_issues`, `remove_sub_issue`, `reprioritize_sub_issue`), `list_issue_types`.
+- Repos/Branches/Files: `create_repository`, `fork_repository`, `list_branches`, `create_branch`, `get_file_contents`, `create_or_update_file`, `delete_file`, `push_files`, tags/releases (`list_tags`, `get_tag`, `list_releases`, `get_latest_release`, `get_release_by_tag`), stars (`star_repository`, `unstar_repository`, `list_starred_repositories`).
+- Commits: `list_commits`, `get_commit`.
+- Actions (Workflows): `list_workflows`, `list_workflow_runs`, `get_workflow_run`, `get_workflow_run_usage`, `list_workflow_jobs`, `get_job_logs`, `get_workflow_run_logs`, `list_workflow_run_artifacts`, `download_workflow_run_artifact`, `run_workflow`, `rerun_workflow_run`, `rerun_failed_jobs`, `cancel_workflow_run`, `delete_workflow_run_logs`.
+- Notifications: `list_notifications`, `get_notification_details`, `dismiss_notification`, `manage_notification_subscription`, `manage_repository_notification_subscription`, `mark_all_notifications_read`.
+- Security: code scanning (`list_code_scanning_alerts`, `get_code_scanning_alert`), Dependabot (`list_dependabot_alerts`, `get_dependabot_alert`), secret scanning (`list_secret_scanning_alerts`, `get_secret_scanning_alert`), advisories (`list_repository_security_advisories`, `list_org_repository_security_advisories`, `list_global_security_advisories`, `get_global_security_advisory`).
+- Discussions: `list_discussions`, `list_discussion_categories`, `get_discussion`, `get_discussion_comments`.
+- Gists: `create_gist`, `update_gist`, `list_gists`.
+- Teams: `get_teams`, `get_team_members`.
+- Search: `search_repositories`, `search_pull_requests`, `search_issues`, `search_code`, `search_users`, `search_orgs`.
+- Profile: `get_me`.
 
 Appendix: Fallbacks and markers
 - The Action path does not rely on a Responses API fallback. If you are an external agent running in a read‑only environment, prefer returning a single patch (*** Begin Patch … *** End Patch) or explicit file markers to communicate changes; do not change this repository’s fallback behavior.
