@@ -26,4 +26,4 @@ jobs:
         uses: ./
         with:
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-          model: gpt-5-mini
+          model: gpt-5-nano

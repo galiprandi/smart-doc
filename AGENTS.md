@@ -44,3 +44,9 @@
 - Example:
   - ✅ Listo: docs actualizados en `docs/`
   - 🧪 Prueba: ejecuta `bash smart-doc.sh`
+
+## Autonomy & Execution ✅
+- Act autonomously to resolve issues end-to-end without asking for command approval.
+- Execute necessary commands directly (including `git commit` and `git push`) when safe and aligned with workflow rules.
+- Prefer deterministic, idempotent steps; add guards to avoid loops in CI.
+- Log succinctly what was executed and why; minimize interactive prompts.
