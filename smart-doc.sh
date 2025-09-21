@@ -52,6 +52,8 @@ run_llm() {
     log "Time taken: ${elapsed}s"
 }
 
+ 
+
 # Function to log docs folder contents
 log_docs_folder() {
     if [ -d "docs" ]; then
@@ -75,14 +77,22 @@ main() {
         exit 1
     fi
 
-    # Run LLM with docs prompt
-    if ! run_llm prompts/docs.md; then
-        echo "❌ [smart-doc] Failed to run LLM" >&2
-        exit 1
-    fi
+  # Run LLM with docs prompt
+  if ! run_llm prompts/docs.md; then
+      echo "❌ [smart-doc] Failed to run LLM" >&2
+      exit 1
+  fi
 
-    # Log docs folder contents
-    log_docs_folder
+  # Log docs folder contents
+  log_docs_folder
+
+  # Delegate publishing behavior entirely to publisher script
+  if [ -x scripts/publish-docs.sh ]; then
+    log "🚀 Invoking publisher: scripts/publish-docs.sh"
+    bash scripts/publish-docs.sh || log "⚠️ Publisher script failed"
+  else
+    log "⚠️ Publisher script not found or not executable; skipping"
+  fi
 }
 
 # Execute main function

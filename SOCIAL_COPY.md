@@ -3,31 +3,49 @@
 
 ## LinkedIn
 
+📚 Smart Doc v1 — Diff‑driven docs that stay fresh.
 
-📚 Smart Doc: Keep shipping — we’ll handle the docs. Smart Doc turns every merge into change‑only pages in /docs and a ready‑to‑merge PR.
-
-
-We built Smart Doc, a GitHub Action that turns each merge into clear, change‑only docs — and opens an auto‑merge PR so protected branches stay protected.
-
+Every change becomes concise, change‑only pages under `docs/` with a PR ready to merge. Keep shipping — we’ll keep your docs aligned with code.
 
 ✨ Highlights
-
-- Change‑only updates to /docs (English, concise)
-
-- Auto‑merge PR instead of pushing to main
-
-- SMART_TIMELINE.md replaces ad‑hoc changelogs for docs
-
-- Works with any stack; easy setup (2 lines in your workflow)
-
+- 🧠 Diff‑aware updates (minimal churn, readable diffs)
+- ✍️ Auto‑publish: commit on PRs, PR branch on main
+- 💬 PR comment with updated files (fast review)
+- 🔒 Safe defaults: no loops, least‑priv permissions
 
 🚀 Get started
-
 - Repo: https://github.com/galiprandi/smart-doc
+- Marketplace: coming soon (uses: `galiprandi/smart-doc@v1`)
 
-- Use: uses: galiprandi/smart-doc@v1
+🧩 Drop‑in YAML
+```yaml
+      - uses: galiprandi/smart-doc@v1
+        with:
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          model: gpt-5-mini
+```
 
+💬 What’s the biggest documentation pain in your team? Tell us below — or tag someone who needs effortless docs.
 
-💬 What’s the biggest documentation pain in your team? Comment below — and share this post with someone who needs it.
+## X / Twitter
+
+📚 Smart Doc v1 — Diff‑driven docs that stay fresh.
+
+Every change → concise docs in `docs/` + a ready PR. Keep shipping, we’ll handle the docs.
+
+🧠 Diff‑aware • ✍️ Auto‑publish • 💬 PR comment • 🔒 Safe defaults
+
+Get started: https://github.com/galiprandi/smart-doc (uses: `galiprandi/smart-doc@v1`)
+
+## Marketplace Listing (One‑liner + Features)
+
+One‑liner
+- Generate concise, diff‑driven docs on every change.
+
+Features
+- 🧠 Change‑only updates to `docs/`
+- ✍️ Auto‑publish (commit in PRs, PR branch on main)
+- 💬 PR comment with updated files
+- 🔒 Safe defaults and minimal permissions
 
 ---

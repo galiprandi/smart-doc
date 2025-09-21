@@ -1,5 +1,5 @@
-name: '📚 Smart Doc'
-description: 'Keeps your repository documented with each integration. Converts code changes into clear docs using AI.'
+name: 'Smart Doc Action'
+description: 'Generate concise, diff-driven docs on every change.'
 branding:
   icon: 'book-open'
   color: 'purple'
