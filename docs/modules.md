@@ -1,22 +1,19 @@
-# Modules and Key Scripts
+# Modules
 
-Last updated: 2025-09-21T05:29:20Z
+Last updated: 2025-09-21T05:34:47Z  (commit `cbce57d`)
 
-- `smart-doc.sh` — main minimal entrypoint (Bash, strict mode). It:
-  - Validates `OPENAI_API_KEY` and `MODEL` (environment inputs).
-  - Attempts to install `@openai/codex` CLI if not present.
-  - Runs the Codex CLI with `prompts/docs.md` to generate docs.
-  - Logs contents of the `docs/` folder if present.
+Key components in the repository:
 
-- `action.yml` — composite action metadata. Declares inputs (`model`, `openai_api_key`) and runs `./smart-doc.sh`.
+- `action.yml` — composite action metadata and inputs (model, provider, etc.).
+- `entrypoint.sh` / `smart-doc.sh` — orchestrator and minimal fallback mode (timeline append).
+- `scripts/validator.sh` — environment and preflight checks (API key, tools, template).
+- `scripts/diff-detector.sh` — determines changed files and produces a unified diff.
+- `scripts/prompt-builder.sh` — constructs the final prompt from the diffs and templates.
+- `scripts/doc-updater.sh` — runs the Codex CLI (workspace-write) with the prompt and writes docs to `docs/`.
+- `scripts/publisher.sh` — opens a PR using `gh` (no-op on pull_request events).
+- `prompts/` — prompt templates used to instruct the model (`docs.md`, `timeline.md`).
 
-- `prompts/` — contains prompt templates used by the generator:
-  - `prompts/docs.md` — instructions for the documentation writer (this file).
-  - `prompts/timeline.md` — timeline prompt template.
-
-- `AGENTS.md` — repository guidance for AI agents and guardrails. It documents the fuller pipeline and append-only `SMART_TIMELINE.md` rules.
-
-Files referenced by the generator:
-- `SMART_TIMELINE.md` — append-only timeline (empty in repo root).
-- `tmp/` — temporary runtime files (created by scripts when used).
+Runtime behavior summary:
+- On push events: full pipeline runs and, if docs changed, `publisher.sh` creates a PR on a branch named `smart-doc/docs-update-<sha|epoch>`.
+- On pull_request events: publishing is skipped by design (the action will not push/PR).
 

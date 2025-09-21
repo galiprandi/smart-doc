@@ -32,7 +32,7 @@ Guidelines
 - Prioritize change-only updates: Do not rewrite entire docs unless major discrepancies require it.
 - If no discrepancies are found, minimize or skip updates.
 - Maintain readability: Use headings, lists, code blocks, and links appropriately.
-- For Mermaid: Keep diagrams simple and directly tied to code structures. Use proper flowchart syntax; wrap node labels with special characters (like parentheses) in double quotes, e.g., F["LLM CLI (codex) invocation"]. Avoid unescaped special characters in labels to prevent parse errors.
+- For Mermaid: Keep diagrams simple and directly tied to code structures. Use proper flowchart syntax; wrap node labels with special characters (like parentheses) in double quotes, e.g., F["LLM CLI (codex) invocation"]. Avoid unescaped special characters in labels to prevent parse errors. Prefer horizontal flow (flowchart LR) for simple diagrams with few elements; use vertical (flowchart TD) for more complex flows.
 
 What not to do
 - Do not document business logic or infer non-technical details.

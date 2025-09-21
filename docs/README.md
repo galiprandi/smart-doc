@@ -1,20 +1,13 @@
 # Smart Doc — Documentation Index
 
-Last updated: 2025-09-21T05:29:20Z
+Last updated: 2025-09-21T05:34:47Z  (commit `cbce57d`)
 
-This directory contains concise, change-driven documentation generated to reflect the repository layout and runtime behavior.
+This `docs/` folder contains concise, change-driven documentation for the Smart Doc GitHub Action.
 
-Files:
-- `architecture.md` — high-level architecture and runtime flow
-- `modules.md` — description of key scripts and modules
-- `stack.md` — runtime, dependencies, and inputs
+- `architecture.md` — high-level pipeline and responsibilities
+- `modules.md` — brief description of top-level scripts and templates
+- `stack.md` — runtime and external tools used by the action
+- `technical-debt.md` — discovered TODOs and refactor notes (empty when none)
 
-Refer to the repository root for primary action and prompts:
-- `action.yml` — Action inputs and permissions
-- `smart-doc.sh` — minimal entrypoint orchestration
-- `prompts/` — prompt templates used by the generator
-
-Usage
-- Docs are intended to be change-focused and idempotent.
-- If you modify code or workflows, re-run the generator to update these pages.
+Navigate to the files above for details. All content is grounded in the repository at commit `cbce57d`.
 
