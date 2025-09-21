@@ -16,14 +16,20 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Install OpenAI Codex CLI
+      shell: bash
+      run: |
+        if ! command -v codex >/dev/null 2>&1; then
+          npm install -g @openai/codex
+        fi
     - name: 📚 Smart Doc
-      run: ./smart-doc.sh
       shell: bash
       env:
         OPENAI_API_KEY: ${{ inputs.openai_api_key }}
         MODEL: ${{ inputs.model }}
         GH_TOKEN: ${{ github.token }}
         GITHUB_TOKEN: ${{ github.token }}
+      run: bash "${GITHUB_ACTION_PATH}/smart-doc.sh"
 
 permissions:
   contents: write
