@@ -7,7 +7,6 @@ log() {
 
 # Function to setup inputs
 setup_inputs() {
-  log "⚙️ Setting environment"
     OPENAI_API_KEY="${OPENAI_API_KEY}"
     MODEL="${MODEL:-gpt-5-nano}"
 
@@ -43,7 +42,7 @@ run_llm() {
     local start_time=$(date +%s)
     log "📚 Start documentation process"
 
-    if ! cat "$@" | codex mode exec --full-auto -m gpt-5-mini; then
+    if ! cat "$@" | codex mode exec --full-auto -m gpt-4.1; then
         log "❌ Failed to run LLM exec mode" >&2
         return 1
     fi
