@@ -11,6 +11,14 @@ setup_inputs() {
     OPENAI_API_KEY="${OPENAI_API_KEY}"
     MODEL="${MODEL:-gpt-5-nano}"
 
+    # Verify API key is set
+    if [ -z "$OPENAI_API_KEY" ] || [ "$OPENAI_API_KEY" = "sk-your-openai-key" ]; then
+        log "❌ OPENAI_API_KEY is not properly set"
+        exit 1
+    else
+        log "✅ OPENAI_API_KEY is configured"
+    fi
+
     TIMELINE="SMART_TIMELINE.md"
     TMP_DIR=tmp; mkdir -p "$TMP_DIR"
 }
