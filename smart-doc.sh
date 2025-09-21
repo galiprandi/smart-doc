@@ -16,12 +16,11 @@ setup_inputs() {
 
 # Install Codex CLI globally or fail
 install_codex_globally() {
-    log "📦 Installing LLM CLI"
     if command -v codex >/dev/null 2>&1; then
         log "✅ LLM CLI already installed globally"
         return 0
     fi
-    log "📦 Installing LLM CLI globally..."
+
     if ! npm install -g @openai/codex; then
         log "❌ Failed to install LLM CLI" >&2
         return 1
