@@ -42,7 +42,7 @@ run_llm() {
     local start_time=$(date +%s)
     log "📚 Start documentation process"
 
-    if ! cat "$@" | codex mode exec --full-auto -m gpt-4.1; then
+    if ! cat "$@" | codex mode exec --full-auto -m gpt-5-mini; then
         log "❌ Failed to run LLM exec mode" >&2
         return 1
     fi
