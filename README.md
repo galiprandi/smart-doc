@@ -29,7 +29,7 @@ flowchart LR
 
 ## Requirements
 - GitHub Actions enabled on your repository.
-- Secret: `SMART_DOC_API_TOKEN` (exported as `OPENAI_API_KEY`).
+- Secret: `OPENAI_API_KEY`.
 - Job permissions for PRs:
   - `permissions.contents: write`
   - `permissions.pull-requests: write`

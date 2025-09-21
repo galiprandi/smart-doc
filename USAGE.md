@@ -3,7 +3,7 @@
 This guide complements the README with alternative setups, advanced options, and troubleshooting.
 
 ## Requirements recap
-- Secret: `SMART_DOC_API_TOKEN` (exported as `OPENAI_API_KEY`).
+- Secret: `OPENAI_API_KEY`.
 - Job permissions (for `gh` PR ops):
   - `permissions.contents: write`
   - `permissions.pull-requests: write`
@@ -39,10 +39,9 @@ jobs:
       - name: Smart Doc
         uses: galiprandi/smart-doc@v1
         with:
-          smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
-          branch: main
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           docs_folder: docs
-          generate_history: 'true'
+          model: gpt-5-mini
 ```
 
 ## Alternative triggers
@@ -138,10 +137,9 @@ jobs:
         if: steps.changed.outputs.run == 'true'
         uses: galiprandi/smart-doc@v1
         with:
-          smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
-          branch: main
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           docs_folder: docs
-          generate_history: 'true'
+          model: gpt-5-mini
 ```
 
 ### Multi-branch strategy (develop + main)
@@ -197,14 +195,14 @@ Examples:
 Queue auto-merge (default):
 ```yaml
 with:
-  smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
+  openai_api_key: ${{ secrets.OPENAI_API_KEY }}
   merge_mode: auto
 ```
 
 Merge immediately when mergeable (waits for checks):
 ```yaml
 with:
-  smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
+  openai_api_key: ${{ secrets.OPENAI_API_KEY }}
   merge_mode: immediate
   merge_wait_seconds: '10'
   merge_max_attempts: '30'
@@ -214,7 +212,7 @@ with:
 Leave PR open (no merge action):
 ```yaml
 with:
-  smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
+  openai_api_key: ${{ secrets.OPENAI_API_KEY }}
   merge_mode: off
 ```
 
@@ -247,6 +245,6 @@ with:
 Example override:
 ```yaml
 with:
-  smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
+  openai_api_key: ${{ secrets.OPENAI_API_KEY }}
   model: gpt-4o-mini
 ```

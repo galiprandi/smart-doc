@@ -28,18 +28,18 @@ Repository Structure (key files)
 - `SMART_TIMELINE.md`: Append‑only documentation timeline (English). Each entry must be separated by exactly one blank line and follow the format defined in `prompts/default.md`.
 
 Operation (high level)
-- Entrypoint runs the pipeline:
+- The main script runs the pipeline:
   1) validator → 2) diff‑detector (writes tmp/changed_files.txt, tmp/patch.diff) → 3) prompt‑builder (produces tmp/prompt.md) → 4) doc‑updater (Codex write; sets tmp/have_changes.flag) → 5) publisher (only on push, if changes).
 - On PR runs, publishing is skipped by design (no push, no PR).
 
 Inputs and Secrets
-- Required secret: `SMART_DOC_API_TOKEN` (exported as `OPENAI_API_KEY`).
+- Required secret: `OPENAI_API_KEY`.
 - Configurable inputs (see `action.yml`): `branch`, `docs_folder`, `prompt_template`, `model`, `provider`, `openai_base_url`, `generate_history`. Advanced: `INPUT_INCLUDE_WORKING` and `INPUT_PATCH_FILE` (diff injection) for previews/tests.
 - GitHub CLI (`gh`) and `GITHUB_TOKEN` are used for opening PRs. The diff detector prefers local git; `gh compare` is optional.
 
 Qwen usage (provider switch)
 - To run with Qwen Code via Ollama locally: set `provider: ollama` and `model: qwen2.5-coder` (or your local tag). No extra secret is needed.
-- To run with a hosted Qwen on an OpenAI‑compatible endpoint (e.g., Together/Fireworks/OpenRouter): set `provider: openai`, provide `model`, `smart_doc_api_token` (the vendor key), and `openai_base_url` to the provider’s base URL.
+- To run with a hosted Qwen on an OpenAI‑compatible endpoint (e.g., Together/Fireworks/OpenRouter): set `provider: openai`, provide `model`, `openai_api_key` (the vendor key), and `openai_base_url` to the provider’s base URL.
 
 Jira MCP (optional, auto-configured)
 - If the environment variables `JIRA_EMAIL`, `JIRA_API_TOKEN`, and `JIRA_DOMAIN` are present and non-empty, `scripts/validator.sh` will create (or overwrite) `~/.codex/config.toml` with a Jira MCP server configuration:
@@ -114,7 +114,7 @@ Local development helper
     - `bash scripts/dev-run-docs.sh --prompts-dir prompts --docs-out evals --clean`
   - Requirements:
     - Codex CLI available (`code`, `codex`, or `npx @openai/codex`).
-    - API key in `OPENAI_API_KEY` or `INPUT_SMART_DOC_API_TOKEN` for real generations; otherwise the script logs a warning and no docs will be changed.
+    - API key in `OPENAI_API_KEY` or `INPUT_OPENAI_API_KEY` for real generations; otherwise the script logs a warning and no docs will be changed.
 
 Robustness note
 - `scripts/doc-updater.sh` was hardened to avoid reliance on `mapfile` and to initialize CLI return handling, improving portability in local shells/macOS sandboxes.
@@ -147,7 +147,7 @@ Context
 - To unblock CI while prompts/CLI were unreliable, we introduced a minimal inline entrypoint that guarantees a safe, observable change per run without external scripts.
 
 What changed
-- `.github/workflows/smart-doc.yml`: simplified step to pass only the API token and export `OPENAI_API_KEY`.
+- `.github/workflows/smart-doc.yml`: simplified step to pass only the API key and export `OPENAI_API_KEY`.
 - `entrypoint.sh`: now can operate in a minimal mode that:
   - Appends exactly one compliant line to `SMART_TIMELINE.md` (spacing: one blank line between entries; trailing newline).
   - Commits, pushes a `smart-doc/docs-update-<epoch>` branch, and opens a PR via `gh`.

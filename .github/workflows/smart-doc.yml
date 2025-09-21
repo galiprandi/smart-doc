@@ -1,4 +1,4 @@
-name: Smart Doc
+name: 📚 Smart Doc
 
 on:
   push:
@@ -8,10 +8,7 @@ on:
       - 'SMART_TIMELINE.md'
   pull_request:
     branches: ["**"]
-
-concurrency:
-  group: smart-doc-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -19,81 +16,13 @@ permissions:
 
 jobs:
   update-docs:
-    # Avoid loops: skip pushes from Smart Doc branches and the Actions bot
-    if: >
-      ${{ github.event_name != 'push' || (
-            !startsWith(github.ref_name, 'smart-doc/docs-update-') &&
-            github.actor != 'github-actions[bot]'
-          ) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Ensure Codex CLI available
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "🔧 Ensuring Codex CLI..."
-          echo "Node/NPM versions:"; node -v; npm -v
-          echo "Paths:"; which node || true; which npm || true; which npx || true
-          echo "npm prefix:"; npm config get prefix || true
-          export PATH="$(npm config get prefix 2>/dev/null)/bin:$PATH"
-          echo "PATH after prefix:"; echo "$PATH"
-          echo "corepack:"; corepack --version || true
-          corepack enable || true
-          echo "Configure npm registry to npmjs.org"
-          npm config set registry https://registry.npmjs.org/
-          echo "npm ping:"; npm ping || true
-          echo "npm view @openai/codex version:"; npm view @openai/codex version || true
-          echo "registry probe:"; curl -sSf https://registry.npmjs.org/@openai/codex | head -c 200 || true
-          echo "NPM config:"; npm config list || true
-          echo "Global root:"; npm root -g || true
-          ls -la "$(npm config get prefix)/bin" || true
-          # Strategy A: npx ephemeral package fetch (preferred on hosted runners)
-          for i in 1 2 3; do
-            echo "npx check attempt $i (ephemeral package)...";
-            if npx --yes --package @openai/codex@latest @openai/codex -v; then
-              echo "Codex CLI is ready (npx ephemeral)"; exit 0;
-            fi
-            sleep 2;
-          done
-          # Strategy B: global install fallback
-          for i in 1 2 3; do
-            echo "global install attempt $i...";
-            if npm install -g @openai/codex@latest; then
-              if npx @openai/codex -v; then echo "Codex CLI is ready (global)"; exit 0; fi
-            fi
-            sleep 2;
-          done
-          echo "Codex CLI not available after retries (npx/global)." >&2
-          exit 1
-
-      - name: Run Smart Doc
+      - name: 📚 Smart Doc
         uses: ./
         with:
-          smart_doc_api_token: ${{ secrets.SMART_DOC_API_TOKEN }}
-        env:
-          OPENAI_API_KEY: ${{ secrets.SMART_DOC_API_TOKEN }}
-          MINI_MODE: off
-          OUTPUT_MODE: log
-
-      - name: Upload tmp outputs
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: smart-doc-tmp
-          path: |
-            tmp/**
-          if-no-files-found: warn
-
-      - name: Upload docs preview
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: smart-doc-preview
-          path: |
-            docs/**
-            SMART_TIMELINE.md
-          if-no-files-found: warn
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}

@@ -9,12 +9,8 @@ log() {
 setup_inputs() {
   log "⚙️ Setting environment"
     BRANCH="${INPUT_BRANCH:-main}"
-    MINI_MODE="${INPUT_MINI_MODE:-${MINI_MODE:-on}}"  # on|off
-    OUTPUT_MODE="${INPUT_OUTPUT_MODE:-${OUTPUT_MODE:-pr}}"  # pr|log
-    OPENAI_API_KEY="${INPUT_SMART_DOC_API_TOKEN:-${OPENAI_API_KEY:-}}"
-    PROVIDER="${INPUT_PROVIDER:-${PROVIDER:-codex}}"  # codex|ollama|openai
+    OPENAI_API_KEY="${INPUT_OPENAI_API_KEY:-${OPENAI_API_KEY:-}}"
     MODEL="${INPUT_MODEL:-${MODEL:-gpt-5-nano}}"
-    OPENAI_BASE_URL="${INPUT_OPENAI_BASE_URL:-${OPENAI_BASE_URL:-}}"
 
     TIMELINE="SMART_TIMELINE.md"
     TMP_DIR=tmp; mkdir -p "$TMP_DIR"
