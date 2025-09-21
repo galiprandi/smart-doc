@@ -45,6 +45,18 @@ run_llm() {
     log "Time taken: ${elapsed}s"
 }
 
+# Function to log docs folder contents
+log_docs_folder() {
+    if [ -d "docs" ]; then
+        log "📁 Docs folder contents:"
+        find docs -type f -print | while read -r file; do
+            log "  - $file"
+        done
+    else
+        log "📁 No docs folder found"
+    fi
+}
+
 # Main function to orchestrate everything
 main() {
   log "✳️  Entrypoint"
@@ -61,6 +73,9 @@ main() {
         echo "❌ [smart-doc] Failed to run LLM" >&2
         exit 1
     fi
+
+    # Log docs folder contents
+    log_docs_folder
 }
 
 # Execute main function
