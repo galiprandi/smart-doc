@@ -13,10 +13,10 @@ setup_inputs() {
 
     # Verify API key is set
     if [ -z "$OPENAI_API_KEY" ] || [ "$OPENAI_API_KEY" = "sk-your-openai-key" ]; then
-        log "❌ OPENAI_API_KEY is not properly set"
+        log "❌ API key is not properly set"
         exit 1
     else
-        log "✅ OPENAI_API_KEY is configured"
+        log "✅ API key is configured"
     fi
 
     TIMELINE="SMART_TIMELINE.md"
