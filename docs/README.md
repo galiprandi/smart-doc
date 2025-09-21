@@ -1,6 +1,6 @@
 # Smart Doc — Documentation Index
 
-Last updated: 2025-09-21T05:34:47Z  (commit `f01f43b`)
+Last updated: 2025-09-21T16:57:33Z  (commit `254105f`)
 
 This `docs/` folder contains concise, change-driven documentation for the Smart Doc GitHub Action.
 
@@ -9,4 +9,4 @@ This `docs/` folder contains concise, change-driven documentation for the Smart 
 - `stack.md` — runtime and external tools used by the action
 - `technical-debt.md` — discovered TODOs and refactor notes (empty when none)
 
-Navigate to the files above for details. All content is grounded in the repository at commit `f01f43b`.
+Navigate to the files above for details. All content is grounded in the repository at commit `254105f`.
