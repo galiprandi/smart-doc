@@ -68,8 +68,8 @@ main() {
         exit 1
     fi
 
-  # Run LLM with docs prompt
-    if ! run_llm prompts/docs.md; then
+  # Run LLM with the Action-bundled prompt
+    if ! run_llm "${GITHUB_ACTION_PATH}/prompts/docs.md"; then
         echo "❌ [smart-doc] Failed to run LLM" >&2
         exit 1
     fi
