@@ -137,14 +137,9 @@ if [ -f .env ]; then
   set -o allexport; source .env; set +o allexport
 fi
 
-<<<<<<< Updated upstream
 # Run Smart Doc via bootstrap (soft‑fail; never blocks push)
 echo "📥 Downloading and running Smart Doc bootstrap..."
 curl -fsSL https://raw.githubusercontent.com/galiprandi/smart-doc/v1/bootstrap.sh | bash
-=======
-# Run Smart Doc via remote bootstrap (soft‑fail; never blocks push)
-curl -fsSL https://raw.githubusercontent.com/galiprandi/smart-doc/v1/bootstrap.sh | bash || true
->>>>>>> Stashed changes
 
 # Optionally include generated docs in this push
 if ! git diff --quiet -- docs; then
