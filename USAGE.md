@@ -1,15 +1,15 @@
-# Smart Doc — Usage and Recipes
+# 📘 Smart Doc — Usage and Recipes
 
 This guide complements the README with alternative setups, advanced options, and troubleshooting.
 
-## Requirements recap
+## 🧰 Requirements recap
 - Secret: `OPENAI_API_KEY` (your OpenAI API key).
 - Job permissions:
   - `permissions.contents: write`
   - `permissions.pull-requests: write`
   - The default `GITHUB_TOKEN` is sufficient.
 
-## Minimal workflow (from README)
+## ⚡️ Minimal workflow (from README)
 ```yaml
 name: Smart Doc
 on:
@@ -43,9 +43,9 @@ jobs:
           model: gpt-5-mini
 ```
 
-## Alternative triggers
+## 🔔 Alternative triggers
 
-### GitFlow, release branches, PR-only
+### 🔀 GitFlow, release branches, PR-only
 ```yaml
 on:
   push:
@@ -64,14 +64,14 @@ concurrency:
   cancel-in-progress: true
 ```
 
-### PR-only previews (no pushes)
+### 👀 PR-only previews (no pushes)
 ```yaml
 on:
   pull_request:
     branches: [ main, develop ]
 ```
 
-### Monorepo selective (paths filters)
+### 🧩 Monorepo selective (paths filters)
 ```yaml
 on:
   push:
@@ -89,7 +89,7 @@ on:
       - packages/ui/**
 ```
 
-### Monorepo — per-package jobs (matrix)
+### 🧩 Monorepo — per-package jobs (matrix)
 Run Smart Doc separately for multiple packages/workspaces. Each job scopes `paths` and can write docs into a package‑specific folder (optional) or a shared `docs/` with module pages.
 
 ```yaml
@@ -140,7 +140,7 @@ jobs:
           model: gpt-5-mini
 ```
 
-### Multi-branch strategy (develop + main)
+### 🌿 Multi-branch strategy (develop + main)
 Use previews on PRs (develop, main) and publish only on main.
 
 ```yaml
@@ -158,7 +158,7 @@ concurrency:
   cancel-in-progress: true
 ```
 
-### PR preview artifact (optional)
+### 📦 PR preview artifact (optional)
 Download generated docs from PR runs without publishing:
 
 ```yaml
@@ -173,27 +173,59 @@ Download generated docs from PR runs without publishing:
     if-no-files-found: warn
 ```
 
-## Anti-loop and concurrency
+## 🔁 Anti-loop and concurrency
 - Use `paths-ignore` for `docs/**` and `SMART_TIMELINE.md` on push.
 - Keep a job-level `concurrency` with `cancel-in-progress: true`.
 - Optional job `if:` guard to skip pushes from Smart Doc branches and the Actions bot.
 
-## Troubleshooting
+## 🛠️ Troubleshooting
 - PR not created
   - Ensure job permissions (contents + PRs) and a token available to `gh` (`GITHUB_TOKEN` or `GH_TOKEN`).
   - Check `gh auth status` output in logs.
 - Push rejected (non-fast-forward)
   - The Action uses a resilient strategy (fetch + `--force-with-lease`) on the branch `smart-doc/docs-update-<sha>`.
 
-## Notes
+## 📝 Notes
 - Smart Doc writes only under `docs/` (English) and optionally appends `SMART_TIMELINE.md`.
 - It never pushes directly to protected branches; it opens a PR instead.
 
-## Choosing a model
+## 🧠 Choosing a model
 - Recommended: `gpt-5-mini`.
 - Override with the `model` input when needed.
 - The Action passes `--model` to the CLI when supported and exports `OPENAI_MODEL` and `CODEX_MODEL`.
 - If you see `401 Unauthorized`, verify `OPENAI_API_KEY` and model access.
+
+## ⚓️ Use as hook / remote bootstrap
+Run Smart Doc without installing the Action by calling the remote bootstrap. It soft‑fails on missing secrets and won’t break your pipeline.
+
+- Local/CI one‑liner (after exporting `OPENAI_API_KEY`):
+  - `curl -fsSL https://raw.githubusercontent.com/galiprandi/smart-doc/v1/bootstrap.sh | bash`
+
+Git pre‑push (remote, recommended)
+Create `.git/hooks/pre-push` and make it executable `chmod +x .git/hooks/pre-push`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Optional: load .env (provides OPENAI_API_KEY)
+if [ -f .env ]; then
+  set -o allexport; source .env; set +o allexport
+fi
+
+# Run Smart Doc via remote bootstrap (soft‑fail; never blocks push)
+curl -fsSL https://raw.githubusercontent.com/galiprandi/smart-doc/v1/bootstrap.sh | bash || true
+
+# Optionally include generated docs in this push
+if ! git diff --quiet -- docs SMART_TIMELINE.md; then
+  git add docs SMART_TIMELINE.md || true
+  if ! git diff --cached --quiet; then
+    git commit -m "docs: update generated docs (pre-push)"
+  fi
+fi
+
+exit 0
+```
 
 Example override:
 ```yaml

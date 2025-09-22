@@ -119,29 +119,32 @@ MIT
 
 ## ⚓️ Use as hook (no Action required)
 
-You can run Smart Doc locally or in any CI without installing the Action by using the bundled bootstrap. It handles downloads (when standalone), soft‑fails on missing secrets, and never breaks your pipeline.
+Run Smart Doc remotely via the bootstrap script. It soft‑fails on missing secrets and never breaks your pipeline.
 
-- Local (after exporting `OPENAI_API_KEY`):
-  - `bash ./bootstrap.sh`
-- CI one‑liner:
+- Local/CI one‑liner (after exporting `OPENAI_API_KEY`):
   - `curl -fsSL https://raw.githubusercontent.com/galiprandi/smart-doc/v1/bootstrap.sh | bash`
 
-Git pre‑push example
-Create `.git/hooks/pre-push` (make it executable `chmod +x .git/hooks/pre-push`):
+Git pre‑push (remote, recommended)
+Create `.git/hooks/pre-push` and make it executable `chmod +x .git/hooks/pre-push`:
 
 ```bash
 
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Optional: load .env
+# Optional: load .env (provides OPENAI_API_KEY)
 if [ -f .env ]; then
   set -o allexport; source .env; set +o allexport
 fi
 
+<<<<<<< Updated upstream
 # Run Smart Doc via bootstrap (soft‑fail; never blocks push)
 echo "📥 Downloading and running Smart Doc bootstrap..."
 curl -fsSL https://raw.githubusercontent.com/galiprandi/smart-doc/v1/bootstrap.sh | bash
+=======
+# Run Smart Doc via remote bootstrap (soft‑fail; never blocks push)
+curl -fsSL https://raw.githubusercontent.com/galiprandi/smart-doc/v1/bootstrap.sh | bash || true
+>>>>>>> Stashed changes
 
 # Optionally include generated docs in this push
 if ! git diff --quiet -- docs; then
