@@ -15,7 +15,13 @@ else
   cleanup() { rm -rf "$TMP_DIR"; echo "[bootstrap] Cleaned up temp"; }
   trap cleanup EXIT
   BASE="$TMP_DIR"
-  REPO_RAW="https://raw.githubusercontent.com/galiprandi/smart-doc/v1"
+  # Fetch latest release tag from GitHub API
+  LATEST_TAG=$(curl -s https://api.github.com/repos/galiprandi/smart-doc/releases/latest | sed -n 's/.*"tag_name": "\([^"]*\)".*/\1/p')
+  if [ -z "$LATEST_TAG" ]; then
+    echo "[bootstrap] Failed to fetch latest tag, falling back to v1"
+    LATEST_TAG="v1"
+  fi
+  REPO_RAW="https://raw.githubusercontent.com/galiprandi/smart-doc/$LATEST_TAG"
   curl -fsSL "$REPO_RAW/smart-doc.sh" -o "$BASE/smart-doc.sh"
   chmod +x "$BASE/smart-doc.sh"
   mkdir -p "$BASE/prompts"
