@@ -21,6 +21,7 @@ else
     echo "[bootstrap] Failed to fetch latest tag, falling back to v1"
     LATEST_TAG="v1"
   fi
+  echo "[bootstrap] Using latest tag: $LATEST_TAG"
   REPO_RAW="https://raw.githubusercontent.com/galiprandi/smart-doc/$LATEST_TAG"
   curl -fsSL "$REPO_RAW/smart-doc.sh" -o "$BASE/smart-doc.sh"
   chmod +x "$BASE/smart-doc.sh"
