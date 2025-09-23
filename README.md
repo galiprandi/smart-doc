@@ -67,7 +67,7 @@ jobs:
           fetch-depth: 0
 
       - name: Smart Doc
-        uses: galiprandi/smart-doc@v1
+        uses: galiprandi/smart-doc@v1.2.0
         with:
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           model: gpt-5-mini
@@ -122,7 +122,7 @@ MIT
 Run Smart Doc remotely via the bootstrap script. It soft‑fails on missing secrets and never breaks your pipeline.
 
 - Local/CI one‑liner (after exporting `OPENAI_API_KEY`):
-  - `curl -fsSL https://raw.githubusercontent.com/galiprandi/smart-doc/v1/bootstrap.sh | bash`
+  - `curl -fsSL https://raw.githubusercontent.com/galiprandi/smart-doc/v1.2.0/bootstrap.sh | bash`
 
 Git pre‑push (remote, recommended)
 Create `.git/hooks/pre-push` and make it executable `chmod +x .git/hooks/pre-push`:
@@ -139,7 +139,7 @@ fi
 
 # Run Smart Doc via bootstrap (soft‑fail; never blocks push)
 echo "📥 Downloading and running Smart Doc bootstrap..."
-curl -fsSL https://raw.githubusercontent.com/galiprandi/smart-doc/v1/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/galiprandi/smart-doc/v1.2.0/bootstrap.sh | bash
 
 # Optionally include generated docs in this push
 if ! git diff --quiet -- docs; then
